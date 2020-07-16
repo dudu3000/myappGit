@@ -23,7 +23,7 @@ function pagination(req, res, model){
     results.results = model.slice(startIndex, endIndex);
     if(results.results.length == 0){
 
-        throw Error('User not found!');
+        throw Error('Not found!');
 
     }
     res.paginatedResults = results;

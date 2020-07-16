@@ -1,4 +1,4 @@
-const User = require('../db/models/User.js');
+const User = require('./../db/models/User.js');
 var moment = require('moment');
 const jwt = require('jsonwebtoken');
 
@@ -19,6 +19,7 @@ function createToken(foundUser, requestMinutes){
         birthDay: foundUser.birthDay
     }
     
+    console.log('test');
     if(requestMinutes > 60)
         throw Error('Session over 60 mintues required!');
     

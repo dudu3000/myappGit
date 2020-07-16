@@ -1,7 +1,6 @@
 {
   "name": "myapp",
   "version": "1.0.0",
-  "description": "",
   "main": "index.js",
   "dependencies": {
     "body-parser": "^1.19.0",
@@ -19,8 +18,18 @@
   },
   "devDependencies": {},
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
   },
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dudu3000/myappGit.git"
+  },
+  "bugs": {
+    "url": "https://github.com/dudu3000/myappGit/issues"
+  },
+  "homepage": "https://github.com/dudu3000/myappGit#readme",
+  "description": ""
 }

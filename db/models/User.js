@@ -30,14 +30,6 @@ User.init({
     birthDay: {
         type: Sequelize.DATEONLY,
         allowNull: false
-    },
-    tooken: {
-        type: Sequelize.TIME,
-        allowNull: false
-    },
-    minutes: {
-        type: Sequelize.INTEGER,
-        allowNull: false
     }
 },{
     sequelize,

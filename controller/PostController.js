@@ -1,5 +1,5 @@
-const fileFunctions = require('../utils/FileFunctions.js');
-const userFunctions = require('../utils/UserFunctions.js');
+const fileFunctions = require('./../utils/FileFunctions.js');
+const userFunctions = require('./../utils/UserFunctions.js');
 const pag = require('./../utils/pagination.js');
 const express = require('express');
 const router = express.Router({
@@ -52,6 +52,7 @@ router.post('/', async(req, res)=>{
 
     const t = await sequelize.transaction();
     try{
+        console.log(req.body);
         const userInformation = await userFunctions.verifyTooken(req);
         const createdPost = await Post.Post.create({
             userName: userInformation.userName,

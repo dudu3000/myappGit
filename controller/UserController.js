@@ -1,5 +1,5 @@
 const pag = require('./../utils/pagination.js');
-const userFunction = require('./../utils/UserFunctions.js');
+const userFunctions = require('./../utils/UserFunctions.js');
 const express = require('express');
 const router = express.Router({
     mergeParams: true
@@ -52,8 +52,8 @@ router.post('/login', async(req, res)=>{
                 password: req.body.password
             }
         }, {transaction: t });
-        await userFunction.validateLogin(foundUser);
-        const accessToken = await userFunction.createToken(foundUser, req.body.minutes);
+        await userFunctions.validateLogin(foundUser);
+        const accessToken = await userFunctions.createToken(foundUser, req.body.minutes);
         await t.commit();
         res.send('You\'re now logged in! You have ' + req.body.minutes + ' minutes before you\'ll be disconnected!\n' + 'Your token: ' + accessToken);
     }catch(err){
