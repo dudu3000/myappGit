@@ -60,10 +60,10 @@ router.post('/', async(req, res)=>{
         }, {transaction: t}, function(userName){return userName});
         await fileFunctions.addFile(req.files.photo.data, createdPost);
         await t.commit();
-        res.send('Post created!');
+        res.send({text: 'Post created!'});
     }catch(err){
         await t.rollback();
-        res.send(err + '');
+        res.sendStatus(400);
         throw Error('Error:\n' + err);
     }
     

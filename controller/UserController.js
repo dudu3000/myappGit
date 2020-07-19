@@ -55,10 +55,10 @@ router.post('/login', async(req, res)=>{
         await userFunctions.validateLogin(foundUser);
         const accessToken = await userFunctions.createToken(foundUser, req.body.minutes);
         await t.commit();
-        res.send('You\'re now logged in! You have ' + req.body.minutes + ' minutes before you\'ll be disconnected!\n' + 'Your token: ' + accessToken);
+        res.send({text: 'You\'re now logged in! You have ' + req.body.minutes + ' minutes before you\'ll be disconnected!\n', token: accessToken});
     }catch(err){
         await t.rollback();
-        res.send(err + '');
+        res.sendStatus(401);
         throw Error('Error:\n' + err);
     }
 

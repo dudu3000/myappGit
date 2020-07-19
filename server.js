@@ -1,6 +1,7 @@
 const express = require('express');
 const app = express();
 const fileUpload = require('express-fileupload');
+const cors = require('cors');
 
 //Require .env for configuration
 require('dotenv').config();
@@ -15,6 +16,7 @@ const db = require('./db/index.js');
 //Parsing JSON
 app.use(express.json());
 app.use(fileUpload());
+app.use(cors());
 
 app.use('/', home);
 app.use('/user', user);
