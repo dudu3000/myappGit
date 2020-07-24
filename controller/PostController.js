@@ -37,7 +37,7 @@ router.get('/', async(req, res)=>{
     }catch(err){
         await t.rollback();
         res.send(err + '');
-        throw Error('Error:\n' + err);
+        console.log(err);
     }
 
 })

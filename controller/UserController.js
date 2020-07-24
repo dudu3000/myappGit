@@ -1,5 +1,6 @@
 const pag = require('./../utils/pagination.js');
 const userFunctions = require('./../utils/UserFunctions.js');
+const erros = require('./../utils/ErrorsHandler.js');
 const express = require('express');
 const router = express.Router({
     mergeParams: true
@@ -55,11 +56,10 @@ router.post('/login', async(req, res)=>{
         await userFunctions.validateLogin(foundUser);
         const accessToken = await userFunctions.createToken(foundUser, req.body.minutes);
         await t.commit();
-        res.send({text: 'You\'re now logged in! You have ' + req.body.minutes + ' minutes before you\'ll be disconnected!\n', token: accessToken});
+        res.status(226).send({text: 'You\'re now logged in! You have ' + req.body.minutes + ' minutes before you\'ll be disconnected!\n', token: accessToken});
     }catch(err){
         await t.rollback();
-        res.sendStatus(401);
-        throw Error('Error:\n' + err);
+        res.status(401).send(err+'');
     }
 
 });
@@ -90,11 +90,11 @@ router.post('/', async(req, res)=>{
             minutes: 0
         }, {transaction: t});
         await t.commit();
-        res.send('Account created!');
+        res.status(201).send('Account created!');
     }catch(err){
         await t.rollback();
-        res.send(err + '');
-        throw Error('Error:\n' + err);
+        console.log(err + '');
+        res.status(403).send('Username or email adress already used!');
     }
 
 });

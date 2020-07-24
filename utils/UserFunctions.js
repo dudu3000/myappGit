@@ -1,12 +1,13 @@
 const User = require('./../db/models/User.js');
 var moment = require('moment');
 const jwt = require('jsonwebtoken');
+const errors = require('./../utils/ErrorsHandler.js');
 
 //Used for Login
 function validateLogin(foundUser){
 
     if(foundUser == null)
-        throw Error('Logging in failed!');
+        new errors.failLogin('Username or password incorrect!');
 
 }
 
@@ -21,7 +22,7 @@ function createToken(foundUser, requestMinutes){
     
     console.log('test');
     if(requestMinutes > 60)
-        throw Error('Session over 60 mintues required!');
+        new errors.failLogin('The amount of time requested is over 60 minutes!');
     
     const accessToken = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: requestMinutes + 'm' })
     return accessToken;
@@ -38,7 +39,7 @@ async function verifyTooken(requestHeaders){
     
     const user = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
         if(err)
-            throw Error('Invalid token!\n');
+        throw Error('Invalid token!\n');
         return user;
     });
     return user;
