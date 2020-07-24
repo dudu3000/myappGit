@@ -7,9 +7,27 @@ const errors = require('./../utils/ErrorsHandler.js');
 function validateLogin(foundUser){
 
     if(foundUser == null)
-        new errors.failLogin('Username or password incorrect!');
+        errors.failUser('Username or password incorrect!');
 
 }
+
+
+function validateRegister(createdUser){
+    if(createdUser.firstName.length < 1 || createdUser.firstName.lenght > 40)
+        errors.failUser('Firstname must contain at least 1 character and no more than 40 characters!');
+    if(createdUser.lastName.length < 1 || createdUser.lastName.lenght > 40)
+        errors.failUser('Lastname must contain at least 1 character and no more than 40 characters!');
+    if(createdUser.userName.length < 5 || createdUser.userName.lenght > 40)
+        errors.failUser('Username must contain at least 5 character and no more than 40 characters!');
+    if(createdUser.password.length < 1 || createdUser.password.length > 40)
+        errors.failUser('Password must contain at least 1 characters and no more than 40 characters!');
+    if(createdUser.email.length < 1)
+        errors.failUser('You must enter your email adress!');
+    if(createdUser.birthDay == null)
+        errors.failUser('Please enter your birthday!');
+}
+
+
 
 //Used on login
 function createToken(foundUser, requestMinutes){
@@ -22,7 +40,7 @@ function createToken(foundUser, requestMinutes){
     
     console.log('test');
     if(requestMinutes > 60)
-        new errors.failLogin('The amount of time requested is over 60 minutes!');
+        errors.failUser('The amount of time requested is over 60 minutes!');
     
     const accessToken = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: requestMinutes + 'm' })
     return accessToken;
@@ -35,11 +53,11 @@ async function verifyTooken(requestHeaders){
     const token = authHeader;
 
     if(token == null)
-        throw Error("Token is missing!\n");
+        errors.failUser("Token is missing!\n");
     
     const user = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
         if(err)
-        throw Error('Invalid token!\n');
+        errors.failUser('Invalid token!\n');
         return user;
     });
     return user;
@@ -49,6 +67,9 @@ async function verifyTooken(requestHeaders){
 module.exports = {
     validateLogin: function(foundUser){
         return validateLogin(foundUser);
+    },
+    validateRegister: function(createdUser){
+        return validateRegister(createdUser);
     },
     createToken: function(foundUser, requestMinutes){
         return createToken(foundUser, requestMinutes);

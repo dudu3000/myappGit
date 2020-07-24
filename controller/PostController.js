@@ -29,14 +29,19 @@ router.get('/', async(req, res)=>{
     try{
         const userInformation = await userFunctions.verifyTooken(req);
         const foundPosts = await Post.Post.findAll({
-            userName: req.body.userName
+            where: {
+                userName: req.body.userName
+            }
         }, {transaction: t});
         await pag.pagination(req, res, foundPosts);
         await t.commit();
         res.send(res.paginatedResults);
     }catch(err){
         await t.rollback();
-        res.send(err + '');
+        if(err == 'Error: Not found!')
+            res.status(401).send('Can not find posts of this user.');
+        else
+            res.status(401).send(err.message + '');
         console.log(err);
     }
 
@@ -57,14 +62,14 @@ router.post('/', async(req, res)=>{
         const createdPost = await Post.Post.create({
             userName: userInformation.userName,
             oldName: req.files.photo.name
-        }, {transaction: t}, function(userName){return userName});
+        }, {transaction: t});
         await fileFunctions.addFile(req.files.photo.data, createdPost);
         await t.commit();
-        res.send({text: 'Post created!'});
+        res.status(200).send({text: 'Post created!'});
     }catch(err){
         await t.rollback();
-        res.sendStatus(400);
-        throw Error('Error:\n' + err);
+        res.status(400).send(err.message + '');
+        console.log(err);
     }
     
 });
@@ -88,11 +93,11 @@ router.delete('/', async(req, res)=>{
         }, {transaction: t});
         await fileFunctions.removeFile(userInformation.userName, req.body.id);
         await t.commit();
-        res.send('Post deleted!');
+        res.status(200).send('Post deleted!');
     }catch(err){
         await t.rollback();
-        res.send(err + '');
-        throw Error('Error:\n' + err);
+        res.status(400).send(err.message + '');
+        console.log(err);
     }
 
 });

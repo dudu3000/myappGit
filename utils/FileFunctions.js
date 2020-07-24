@@ -1,17 +1,17 @@
 const fileSystem = require('fs');
+const errors = require('./../utils/ErrorsHandler.js');
 
 //Used to add a photo when a post reqest comes
 function addFile(data, userName){
 
     var path = './db/photos/' + userName.userName + '-' + userName.id + '.jpg';
-    fileSystem.writeFile(path, data, function(err){
-        if(err){
-            throw Error('Error creating file');
-        }
-    });
+    try{
+        fileSystem.writeFileSync(path, data);
+    }catch(err){
+        errors.failPost('Error posting the photo! Please try again.');
+    }
+};
 
-
-}
 //Used to remove a photo when a deleting request comes
 function removeFile(userName, id){
 
@@ -19,7 +19,7 @@ function removeFile(userName, id){
     try{
         fileSystem.unlinkSync(path);
     }catch(err){
-        throw Error('Error finding post');
+        errors.failPost('Could not find the file that you are trying to delete!');
     }
 
 }

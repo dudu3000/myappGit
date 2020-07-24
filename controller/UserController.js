@@ -1,12 +1,13 @@
 const pag = require('./../utils/pagination.js');
 const userFunctions = require('./../utils/UserFunctions.js');
-const erros = require('./../utils/ErrorsHandler.js');
+const errors = require('./../utils/ErrorsHandler.js');
 const express = require('express');
 const router = express.Router({
     mergeParams: true
 });
 const userdB = require('./../db/index.js');
 const User = require('../db/models/User.js');
+const ErrorsHandler = require('./../utils/ErrorsHandler.js');
 const sequelize = userdB.sequelize;
 
 
@@ -19,7 +20,6 @@ const sequelize = userdB.sequelize;
 Quearies:
 ?page=(integer)&limit=(interger)
 Body:
-curentUser: string
 */
 router.get('/', async(req, res)=>{
 
@@ -29,11 +29,11 @@ router.get('/', async(req, res)=>{
         const foundUsers = await User.User.findAll({}, {transaction: t});
         await pag.pagination(req, res, foundUsers);
         await t.commit();
-        res.send(res.paginatedResults);
+        res.status(200).send(res.paginatedResults);
     }catch(err){
         await t.rollback();
-        res.send(err + '');
-        throw Error('Error:\n' + err);
+        res.status(401).send(err.message + '');
+        console.log(err + '');
     }
 
 });
@@ -56,10 +56,11 @@ router.post('/login', async(req, res)=>{
         await userFunctions.validateLogin(foundUser);
         const accessToken = await userFunctions.createToken(foundUser, req.body.minutes);
         await t.commit();
-        res.status(226).send({text: 'You\'re now logged in! You have ' + req.body.minutes + ' minutes before you\'ll be disconnected!\n', token: accessToken});
+        res.status(200).send({text: 'You\'re now logged in! You have ' + req.body.minutes + ' minutes before you\'ll be disconnected!\n', token: accessToken});
     }catch(err){
         await t.rollback();
-        res.status(401).send(err+'');
+        res.status(401).send(err.message + '');
+        console.log(err + '');
     }
 
 });
@@ -79,6 +80,7 @@ router.post('/', async(req, res)=>{
 
     const t = await sequelize.transaction();
     try{
+        await userFunctions.validateRegister(req.body);
         const createdUser = await User.User.create({
             firstName: req.body.firstName,
             lastName: req.body.lastName,
@@ -94,16 +96,19 @@ router.post('/', async(req, res)=>{
     }catch(err){
         await t.rollback();
         console.log(err + '');
-        res.status(403).send('Username or email adress already used!');
+        if(err == 'SequelizeUniqueConstraintError: Validation error')
+            res.status(403).send('Username or email already used!');
+        else{
+            res.status(403).send(err.message + '');
+        }
     }
 
 });
 
 /*
 Body:
-curentUser: string
 */
-router.delete('/', async(req, res)=>{//body: curentUser
+router.delete('/', async(req, res)=>{
 
     const t = await sequelize.transaction();
     try{
@@ -114,11 +119,11 @@ router.delete('/', async(req, res)=>{//body: curentUser
             }
         }, {transaction: t});
         await t.commit();
-        res.send('Account deleted!');
+        res.status(200).send('Account deleted!');
     }catch(err){
         await t.rollback();
-        res.send(err + '');
-        throw Error('Error:\n' + err);
+        res.status(401).send(err.message + '');
+        console.log(err + '');
     }
 
 });
