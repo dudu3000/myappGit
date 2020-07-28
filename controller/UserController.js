@@ -92,14 +92,14 @@ router.post('/', async(req, res)=>{
             minutes: 0
         }, {transaction: t});
         await t.commit();
-        res.status(201).send('Account created!');
+        res.status(201).send({text: 'Account created!'});
     }catch(err){
         await t.rollback();
         console.log(err + '');
         if(err == 'SequelizeUniqueConstraintError: Validation error')
-            res.status(403).send('Username or email already used!');
+            res.status(403).send({text: 'Username or email already used!'});
         else{
-            res.status(403).send(err.message + '');
+            res.status(403).send({text: err.message + ''});
         }
     }
 

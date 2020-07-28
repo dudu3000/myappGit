@@ -19,8 +19,8 @@ function validateRegister(createdUser){
         errors.failUser('Lastname must contain at least 1 character and no more than 40 characters!');
     if(createdUser.userName.length < 5 || createdUser.userName.lenght > 40)
         errors.failUser('Username must contain at least 5 character and no more than 40 characters!');
-    if(createdUser.password.length < 1 || createdUser.password.length > 40)
-        errors.failUser('Password must contain at least 1 characters and no more than 40 characters!');
+    if(createdUser.password.length < 5 || createdUser.password.length > 40)
+        errors.failUser('Password must contain at least 5 characters and no more than 40 characters!');
     if(createdUser.email.length < 1)
         errors.failUser('You must enter your email adress!');
     if(createdUser.birthDay == null)
@@ -38,7 +38,6 @@ function createToken(foundUser, requestMinutes){
         birthDay: foundUser.birthDay
     }
     
-    console.log('test');
     if(requestMinutes > 60)
         errors.failUser('The amount of time requested is over 60 minutes!');
     
