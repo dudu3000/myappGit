@@ -20,13 +20,13 @@ const sequelize = postdB.sequelize;
 Quearies:
 ?page=(integer)&limit=(interger)
 Body:
-curentUser: string
 userName: string
 */
-router.get('/', async(req, res)=>{
+router.get('/', async(req, res, next)=>{
 
     const t = await sequelize.transaction();
     try{
+        //Verify the if the token is valid
         const userInformation = await userFunctions.verifyTooken(req);
         const foundPosts = await Post.Post.findAll({
             where: {
@@ -38,11 +38,7 @@ router.get('/', async(req, res)=>{
         res.send(res.paginatedResults);
     }catch(err){
         await t.rollback();
-        if(err == 'Error: Not found!')
-            res.status(401).send('Can not find posts of this user.');
-        else
-            res.status(401).send(err.message + '');
-        console.log(err);
+        next(err, req, res, next);
     }
 
 })
@@ -50,14 +46,12 @@ router.get('/', async(req, res)=>{
 
 /*
 Body:
-curentUser: string
 photo: file
 */
-router.post('/', async(req, res)=>{
+router.post('/', async(req, res, next)=>{
 
     const t = await sequelize.transaction();
     try{
-        console.log(req.body);
         const userInformation = await userFunctions.verifyTooken(req);
         const createdPost = await Post.Post.create({
             userName: userInformation.userName,
@@ -68,8 +62,7 @@ router.post('/', async(req, res)=>{
         res.status(200).send({text: 'Post created!'});
     }catch(err){
         await t.rollback();
-        res.status(400).send(err.message + '');
-        console.log(err);
+        next(err, req, res, next);
     }
     
 });
@@ -78,9 +71,8 @@ router.post('/', async(req, res)=>{
 /*
 Body:
 id: integer
-curentUser: string
 */
-router.delete('/', async(req, res)=>{
+router.delete('/', async(req, res, next)=>{
 
     const t = await sequelize.transaction();
     try{
@@ -93,11 +85,10 @@ router.delete('/', async(req, res)=>{
         }, {transaction: t});
         await fileFunctions.removeFile(userInformation.userName, req.body.id);
         await t.commit();
-        res.status(200).send('Post deleted!');
+        res.status(200).send({text: 'Post deleted!'});
     }catch(err){
         await t.rollback();
-        res.status(400).send(err.message + '');
-        console.log(err);
+        next(err, req, res, next);
     }
 
 });

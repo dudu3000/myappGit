@@ -11,7 +11,7 @@ const sequelize = new Sequelize(process.env.DB_DATABASE, process.env.DB_USER, pr
 
 
 exports.sequelize = sequelize;
-
+//Import models so they can be exported only from this module
 const post = require('./models/Post.js');
 const user = require('./models/User.js');
 

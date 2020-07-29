@@ -1,11 +1,13 @@
-class failUser extends Error{
+//Class used to throw errors on Users model
+class FailUser extends Error{
     constructor(args){
         super(args);
         this.name = 'failUser';       
     }
 }
 
-class failPost extends Error{
+//Class used to throw errors on Posts model
+class FailPost extends Error{
     constructor(args){
         super(args);
         this.name = 'failPost';
@@ -15,9 +17,9 @@ class failPost extends Error{
 
 module.exports={
     failUser: function(args){
-        throw new failUser(args);
+        throw new FailUser(args);
     },
     failPost: function(args){
-        throw new failPost(args);
+        throw new FailPost(args);
     }
 }

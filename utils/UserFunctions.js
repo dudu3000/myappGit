@@ -5,13 +5,11 @@ const errors = require('./../utils/ErrorsHandler.js');
 
 //Used for Login
 function validateLogin(foundUser){
-
     if(foundUser == null)
         errors.failUser('Username or password incorrect!');
-
 }
 
-
+//Used to check the length of inputs on creating new account
 function validateRegister(createdUser){
     if(createdUser.firstName.length < 1 || createdUser.firstName.lenght > 40)
         errors.failUser('Firstname must contain at least 1 character and no more than 40 characters!');
@@ -29,7 +27,7 @@ function validateRegister(createdUser){
 
 
 
-//Used on login
+//Used on login to create a token
 function createToken(foundUser, requestMinutes){
 
     const user = {
@@ -37,10 +35,11 @@ function createToken(foundUser, requestMinutes){
         email: foundUser.email,
         birthDay: foundUser.birthDay
     }
-    
+    //Throw error if the requested amount of minutes is over 60 minutes
     if(requestMinutes > 60)
         errors.failUser('The amount of time requested is over 60 minutes!');
     
+    //Create the token
     const accessToken = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: requestMinutes + 'm' })
     return accessToken;
 }

@@ -19,9 +19,8 @@ const sequelize = userdB.sequelize;
 /*
 Quearies:
 ?page=(integer)&limit=(interger)
-Body:
 */
-router.get('/', async(req, res)=>{
+router.get('/', async(req, res, next)=>{
 
     const t = await sequelize.transaction();
     try{
@@ -32,8 +31,7 @@ router.get('/', async(req, res)=>{
         res.status(200).send(res.paginatedResults);
     }catch(err){
         await t.rollback();
-        res.status(401).send(err.message + '');
-        console.log(err + '');
+        next(err, req, res, next)
     }
 
 });
@@ -42,8 +40,9 @@ router.get('/', async(req, res)=>{
 Body:
 userName: string
 password: string
+minutes: int
 */
-router.post('/login', async(req, res)=>{
+router.post('/login', async(req, res, next)=>{
     //https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Destructuring_assignment
     const t = await sequelize.transaction();
     try{
@@ -59,8 +58,7 @@ router.post('/login', async(req, res)=>{
         res.status(200).send({text: 'You\'re now logged in! You have ' + req.body.minutes + ' minutes before you\'ll be disconnected!\n', token: accessToken});
     }catch(err){
         await t.rollback();
-        res.status(401).send(err.message + '');
-        console.log(err + '');
+        next(err, req, res, next);
     }
 
 });
@@ -73,10 +71,8 @@ userName: string
 password: string
 email: string
 birthDay: yyyy-mm-dd
-tooken: string
-minutes: max 60.(integer)
 */ 
-router.post('/', async(req, res)=>{
+router.post('/', async(req, res, next)=>{
 
     const t = await sequelize.transaction();
     try{
@@ -95,12 +91,7 @@ router.post('/', async(req, res)=>{
         res.status(201).send({text: 'Account created!'});
     }catch(err){
         await t.rollback();
-        console.log(err + '');
-        if(err == 'SequelizeUniqueConstraintError: Validation error')
-            res.status(403).send({text: 'Username or email already used!'});
-        else{
-            res.status(403).send({text: err.message + ''});
-        }
+        next(err, req, res, next);
     }
 
 });
@@ -108,7 +99,7 @@ router.post('/', async(req, res)=>{
 /*
 Body:
 */
-router.delete('/', async(req, res)=>{
+router.delete('/', async(req, res, next)=>{
 
     const t = await sequelize.transaction();
     try{
@@ -122,8 +113,7 @@ router.delete('/', async(req, res)=>{
         res.status(200).send('Account deleted!');
     }catch(err){
         await t.rollback();
-        res.status(401).send(err.message + '');
-        console.log(err + '');
+        next(err, req, res, next);
     }
 
 });
