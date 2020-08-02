@@ -1,8 +1,12 @@
 
 
 function pagination(req, res, model){
-    const page = parseInt(req.query.page);
-    const limit = parseInt(req.query.limit);
+    const {
+        'req.query': query
+    } = req;
+
+    const page = parseInt(query.page);
+    const limit = parseInt(query.limit);
     const startIndex = (page - 1) * limit;
     const endIndex = page * limit;
     const results = {};

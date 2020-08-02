@@ -43,19 +43,22 @@ password: string
 minutes: int
 */
 router.post('/login', async(req, res, next)=>{
-    //https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Destructuring_assignment
+    const {
+        'req.body' : body
+    } = req;
+
     const t = await sequelize.transaction();
     try{
         const foundUser = await User.User.findOne({
             where: {
-                userName: req.body.userName,
-                password: req.body.password
+                userName: body.userName,
+                password: body.password
             }
         }, {transaction: t });
         await userFunctions.validateLogin(foundUser);
-        const accessToken = await userFunctions.createToken(foundUser, req.body.minutes);
+        const accessToken = await userFunctions.createToken(foundUser, body.minutes);
         await t.commit();
-        res.status(200).send({text: 'You\'re now logged in! You have ' + req.body.minutes + ' minutes before you\'ll be disconnected!\n', token: accessToken});
+        res.status(200).send({text: 'You\'re now logged in! You have ' + body.minutes + ' minutes before you\'ll be disconnected!\n', token: accessToken});
     }catch(err){
         await t.rollback();
         next(err, req, res, next);
@@ -73,18 +76,21 @@ email: string
 birthDay: yyyy-mm-dd
 */ 
 router.post('/', async(req, res, next)=>{
+    const {
+        'req.body' : body
+    } = req;
 
     const t = await sequelize.transaction();
     try{
-        await userFunctions.validateRegister(req.body);
+        await userFunctions.validateRegister(body);
         const createdUser = await User.User.create({
-            firstName: req.body.firstName,
-            lastName: req.body.lastName,
-            userName: req.body.userName,
-            password: req.body.password,
-            email: req.body.email,
-            birthDay: req.body.birthDay,
-            tooken: req.body.tooken,
+            firstName: body.firstName,
+            lastName: body.lastName,
+            userName: body.userName,
+            password: body.password,
+            email: body.email,
+            birthDay: body.birthDay,
+            tooken: body.tooken,
             minutes: 0
         }, {transaction: t});
         await t.commit();

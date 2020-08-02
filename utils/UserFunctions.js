@@ -11,17 +11,26 @@ function validateLogin(foundUser){
 
 //Used to check the length of inputs on creating new account
 function validateRegister(createdUser){
-    if(createdUser.firstName.length < 1 || createdUser.firstName.lenght > 40)
+    const {
+        'createdUser.firstName': firtName,
+        'createdUser.lastName': lastName,
+        'createdUser.userName': userName,
+        'createdUser.password': password,
+        'createdUser.email': email,
+        'createdUser.birthDay': birthDay,
+    } = createdUser;
+
+    if(firtName.length < 1 || firtName.lenght > 40)
         errors.failUser('Firstname must contain at least 1 character and no more than 40 characters!');
-    if(createdUser.lastName.length < 1 || createdUser.lastName.lenght > 40)
+    if(lastName.length < 1 || lastName.lenght > 40)
         errors.failUser('Lastname must contain at least 1 character and no more than 40 characters!');
-    if(createdUser.userName.length < 5 || createdUser.userName.lenght > 40)
+    if(userName.length < 5 || userName.lenght > 40)
         errors.failUser('Username must contain at least 5 character and no more than 40 characters!');
-    if(createdUser.password.length < 5 || createdUser.password.length > 40)
+    if(password.length < 5 || password.length > 40)
         errors.failUser('Password must contain at least 5 characters and no more than 40 characters!');
-    if(createdUser.email.length < 1)
+    if(email.length < 1)
         errors.failUser('You must enter your email adress!');
-    if(createdUser.birthDay == null)
+    if(birthDay == null)
         errors.failUser('Please enter your birthday!');
 }
 

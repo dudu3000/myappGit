@@ -23,6 +23,9 @@ Body:
 userName: string
 */
 router.get('/', async(req, res, next)=>{
+    const{
+        'req.body': body
+    } = req;
 
     const t = await sequelize.transaction();
     try{
@@ -30,7 +33,7 @@ router.get('/', async(req, res, next)=>{
         const userInformation = await userFunctions.verifyTooken(req);
         const foundPosts = await Post.Post.findAll({
             where: {
-                userName: req.body.userName
+                userName: body.userName
             }
         }, {transaction: t});
         await pag.pagination(req, res, foundPosts);
@@ -49,15 +52,17 @@ Body:
 photo: file
 */
 router.post('/', async(req, res, next)=>{
-
+    const {
+        'req.files.photo':file
+    } = req;
     const t = await sequelize.transaction();
     try{
         const userInformation = await userFunctions.verifyTooken(req);
         const createdPost = await Post.Post.create({
             userName: userInformation.userName,
-            oldName: req.files.photo.name
+            oldName: file.name
         }, {transaction: t});
-        await fileFunctions.addFile(req.files.photo.data, createdPost);
+        await fileFunctions.addFile(file.data, createdPost);
         await t.commit();
         res.status(200).send({text: 'Post created!'});
     }catch(err){
@@ -73,17 +78,20 @@ Body:
 id: integer
 */
 router.delete('/', async(req, res, next)=>{
+    const{
+        'req.body': body
+    } = req;
 
     const t = await sequelize.transaction();
     try{
         const userInformation = await userFunctions.verifyTooken(req);
         const createdPost = await Post.Post.destroy({
             where: {
-                id: req.body.id,
+                id: body.id,
                 userName: userInformation.userName
             }
         }, {transaction: t});
-        await fileFunctions.removeFile(userInformation.userName, req.body.id);
+        await fileFunctions.removeFile(userInformation.userName, body.id);
         await t.commit();
         res.status(200).send({text: 'Post deleted!'});
     }catch(err){
