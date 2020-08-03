@@ -23,17 +23,13 @@ Body:
 userName: string
 */
 router.get('/', async(req, res, next)=>{
-    const{
-        'req.body': body
-    } = req;
-
     const t = await sequelize.transaction();
     try{
         //Verify the if the token is valid
         const userInformation = await userFunctions.verifyTooken(req);
         const foundPosts = await Post.Post.findAll({
             where: {
-                userName: body.userName
+                userName: req.body.userName
             }
         }, {transaction: t});
         await pag.pagination(req, res, foundPosts);
@@ -52,17 +48,14 @@ Body:
 photo: file
 */
 router.post('/', async(req, res, next)=>{
-    const {
-        'req.files.photo':file
-    } = req;
     const t = await sequelize.transaction();
     try{
         const userInformation = await userFunctions.verifyTooken(req);
         const createdPost = await Post.Post.create({
             userName: userInformation.userName,
-            oldName: file.name
+            oldName: req.files.photo.name
         }, {transaction: t});
-        await fileFunctions.addFile(file.data, createdPost);
+        await fileFunctions.addFile(req.files.photo.data, createdPost);
         await t.commit();
         res.status(200).send({text: 'Post created!'});
     }catch(err){
@@ -78,20 +71,16 @@ Body:
 id: integer
 */
 router.delete('/', async(req, res, next)=>{
-    const{
-        'req.body': body
-    } = req;
-
     const t = await sequelize.transaction();
     try{
         const userInformation = await userFunctions.verifyTooken(req);
         const createdPost = await Post.Post.destroy({
             where: {
-                id: body.id,
+                id: req.body.id,
                 userName: userInformation.userName
             }
         }, {transaction: t});
-        await fileFunctions.removeFile(userInformation.userName, body.id);
+        await fileFunctions.removeFile(userInformation.userName, req.body.id);
         await t.commit();
         res.status(200).send({text: 'Post deleted!'});
     }catch(err){
