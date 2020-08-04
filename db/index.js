@@ -14,10 +14,12 @@ exports.sequelize = sequelize;
 //Import models so they can be exported only from this module
 const post = require('./models/Post.js');
 const user = require('./models/User.js');
+const file = require('./models/File.js');
 
 exports.db = {
     post: post,
-    user: user
+    user: user,
+    file: file
 }
 
 

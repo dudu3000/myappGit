@@ -30,10 +30,20 @@ router.get('/', async(req, res, next)=>{
         res.status(200).send(res.paginatedResults);
     }catch(err){
         await t.rollback();
-        next(err, req, res, next)
+        next(err, req, res, next);
     }
 
 });
+
+
+router.get('/info', async(req, res, next)=>{
+    try{
+        const userInformation = await userFunctions.verifyTooken(req);
+        res.status(200).send(userInformation);
+    }catch(err){
+        next(err, req, res, next);
+    }
+})
 
 /*
 Body:

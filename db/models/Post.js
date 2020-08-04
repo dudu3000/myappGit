@@ -16,9 +16,13 @@ Post.init({
             deferrable: Sequelize.Deferrable.INITIALLY_IMMEDIATE
           }
     },
-    oldName: {
+    title: {
         type: Sequelize.STRING,
         allowNull: false
+    },
+    description: {
+        type: Sequelize.STRING,
+        allowNull: true
     }
 },{
     sequelize,

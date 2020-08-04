@@ -26,7 +26,7 @@ function pagination(req, res, model){
         throw Error('Not found!');
 
     }
-    res.paginatedResults = results;
+    return results;
 }
 
 module.exports = {
