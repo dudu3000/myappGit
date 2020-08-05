@@ -21,9 +21,21 @@ function pagination(req, res, model){
         };
     }
     results.results = model.slice(startIndex, endIndex);
+    if(results.results[0] !== undefined)
+        results.results[0].dataValues.index = 0;
+    if(results.results[1] !== undefined)
+        results.results[1].dataValues.index = 1;
+    if(results.results[2] !== undefined)
+        results.results[2].dataValues.index = 2;
+    if(results.results[3] !== undefined)
+        results.results[3].dataValues.index = 3;
+    if(results.results[4] !== undefined)
+        results.results[4].dataValues.index = 4;
+    if(results.results[5] !== undefined)
+        results.results[5].dataValues.index = 5;
     if(results.results.length == 0){
 
-        throw Error('Not found!');
+        throw Error('Posts not found!');
 
     }
     return results;
