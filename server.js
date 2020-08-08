@@ -34,13 +34,9 @@ app.use(function(err, req, res, next){
         res.status(422).send({error: 'Username or email already used!'});
     else if(err instanceof Sequelize.ForeignKeyConstraintError)
         res.status(422).send({error: 'You can not do this action with this account!'});
-
     else{
         res.status(422).send({error: err.message});
-        console.log(err);
     }
-    
-    console.log(err);
 });
 
 
