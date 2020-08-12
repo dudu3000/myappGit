@@ -1,9 +1,9 @@
 const Sequelize = require('sequelize');
 
 //Establish the connection with db server
-const sequelize = new Sequelize(process.env.DB_DATABASE, process.env.DB_USER, process.env.DB_PASS, {
+const sequelize = new Sequelize('myapp', 'postgres', 'K3nvY19(!Pg', {
 
-    host: process.env.DB_HOST,
+    host: 'localhost',
     dialect: 'postgres'
 
 });
@@ -15,6 +15,11 @@ exports.sequelize = sequelize;
 const post = require('./models/Post.js');
 const user = require('./models/User.js');
 const file = require('./models/File.js');
+user.User.hasMany(post.Post);
+post.Post.hasOne(file.File);
+
+
+sequelize.sync()
 
 exports.db = {
     post: post,

@@ -34,7 +34,8 @@ function createToken(foundUser, requestMinutes){
     const user = {
         userName: foundUser.userName,
         email: foundUser.email,
-        birthDay: foundUser.birthDay
+        birthDay: foundUser.birthDay,
+        id: foundUser.id
     }
     //Throw error if the requested amount of minutes is over 60 minutes
     if(requestMinutes > 60)

@@ -7,23 +7,13 @@ class File extends Model{}
 
 //Format of the table
 File.init({
-    id: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
-        primaryKey: true
-    },
     oldName: {
         type: Sequelize.STRING,
         allowNull: false
     },
     name: {
         type: Sequelize.STRING,
-        allowNull: false,  
-        references: {
-            model: 'Post',
-            key: 'file',
-            deferrable: Sequelize.Deferrable.INITIALLY_IMMEDIATE
-          }
+        allowNull: false
     },
     path: {
         type: Sequelize.STRING,
@@ -32,10 +22,19 @@ File.init({
     userName:{
         type: Sequelize.STRING,
         allowNull: false
+    },
+    postId: {
+        type: Sequelize.INTEGER,
+        allowNull: false,
+        references: {
+            model: 'Post',
+            key: 'id',
+            deferrable: Sequelize.Deferrable.INITIALLY_IMMEDIATE
+          }
     }
 },{
     sequelize,
-    modelName: 'file'
+    modelName: 'files'
 });
 
 module.exports = {

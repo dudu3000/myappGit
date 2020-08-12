@@ -9,12 +9,7 @@ class Post extends Model{}
 Post.init({
     userName: {
         type: Sequelize.STRING,
-        allowNull: false,  
-        references: {
-            model: 'User',
-            key: 'userName',
-            deferrable: Sequelize.Deferrable.INITIALLY_IMMEDIATE
-          }
+        allowNull: false
     },
     title: {
         type: Sequelize.STRING,
@@ -23,10 +18,19 @@ Post.init({
     description: {
         type: Sequelize.STRING,
         allowNull: true
+    },
+    userId: {
+        type: Sequelize.INTEGER,
+        allowNull: false,
+        references: {
+            model: 'User',
+            key: 'id',
+            deferrable: Sequelize.Deferrable.INITIALLY_IMMEDIATE
+          }
     }
 },{
     sequelize,
-    modelName: 'post'
+    modelName: 'posts'
 });
 
 module.exports = {

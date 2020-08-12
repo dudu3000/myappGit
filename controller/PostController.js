@@ -59,26 +59,45 @@ Body:
 photo: file
 */
 router.post('/upload', async(req, res, next)=>{
+    var userInformation = '';
+    createdPost = '';
     const t = await sequelize.transaction();
+    const t1 = await sequelize.transaction();
     try{
-        const userInformation = await userFunctions.verifyTooken(req);
-        const createdPost = await Post.Post.create({
+        userInformation = await userFunctions.verifyTooken(req);
+        createdPost = await Post.Post.create({
             userName: userInformation.userName,
             title: req.body.title,
-            description: req.body.description
+            description: req.body.description,
+            userId: userInformation.id
         }, {transaction: t});
+        await t.commit();
+    }catch(err){
+        await t.rollback();
+        next(err, req, res, next);
+    }
+
+
+    
+    try{
+        console.log(userInformation.id);
         const createdFile = await File.File.create({
-            id: createdPost.id,
             oldName: req.files.photo.name,
             name: userInformation.userName + '-' + createdPost.id,
             path: './../../../../myappGit/db/photos/' + userInformation.userName + '-' + createdPost.id + '.jpg',
-            userName: userInformation.userName
-        })
+            userName: userInformation.userName,
+            postId: createdPost.id
+        }, {transaction: t1})
         await fileFunctions.addFile(req.files.photo.data, createdPost);
-        await t.commit();
+        await t1.commit();
         res.status(200).send({text: 'Post created!'});
     }catch(err){
-        await t.rollback();
+        await t1.rollback();
+        await Post.Post.destroy({
+            where: {
+                id: createdPost.id
+            }
+        });
         next(err, req, res, next);
     }
     
@@ -93,13 +112,13 @@ router.delete('/', async(req, res, next)=>{
     const t = await sequelize.transaction();
     try{
         const userInformation = await userFunctions.verifyTooken(req);
-        const deletedPost = await Post.Post.destroy({
+        const deletedFile = await File.File.destroy({
             where: {
-                id: req.body.id,
+                postId: req.body.id,
                 userName: userInformation.userName
             }
         }, {transaction: t});
-        const deletedFile = await File.File.destroy({
+        const deletedPost = await Post.Post.destroy({
             where: {
                 id: req.body.id,
                 userName: userInformation.userName

@@ -3,6 +3,7 @@ const app = express();
 const fileUpload = require('express-fileupload');
 const cors = require('cors');
 const Sequelize = require('sequelize');
+const models = require('./db/index.js');
 
 
 
@@ -27,7 +28,6 @@ app.use('/', home);
 app.use('/user', user);
 app.use('/post', post);
 
-
 //Error handling middleware
 app.use(function(err, req, res, next){
     if(err instanceof Sequelize.ValidationError)
@@ -37,6 +37,7 @@ app.use(function(err, req, res, next){
     else{
         res.status(422).send({error: err.message});
     }
+    console.log(err);
 });
 
 
