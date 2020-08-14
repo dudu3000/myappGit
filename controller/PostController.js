@@ -23,7 +23,7 @@ Body:
 photo: file
 */
 router.post('/upload', upload.single("file"), async(req, res, next)=>{
-
+    console.log(req);
     var userInformation = '';
     createdPost = '';
     const t = await sequelize.transaction();

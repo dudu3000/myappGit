@@ -53,11 +53,11 @@ async function verifyTooken(requestHeaders){
     const token = authHeader;
 
     if(token == null)
-        errors.failUser("Token is missing!\n");
+        errors.failUser("Token is missing!\n", 401);
     
     const user = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
         if(err)
-        errors.failUser('Invalid token!\n');
+        errors.failUser('Invalid token!\n', 401);
         return user;
     });
     return user;
