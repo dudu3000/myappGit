@@ -2,6 +2,7 @@ const fileFunctions = require('./../utils/FileFunctions.js');
 const userFunctions = require('./../utils/UserFunctions.js');
 const pag = require('./../utils/pagination.js');
 const express = require('express');
+const multer = require('multer');
 const router = express.Router({
     mergeParams: true
 });
@@ -12,9 +13,60 @@ const sequelize = postdB.sequelize;
 
 
 
+const upload = multer({
+    dest: './../db/photos/'
+})
 
 
+/*
+Body:
+photo: file
+*/
+router.post('/upload', upload.single("file"), async(req, res, next)=>{
 
+    var userInformation = '';
+    createdPost = '';
+    const t = await sequelize.transaction();
+    const t1 = await sequelize.transaction();
+    try{
+        userInformation = await userFunctions.verifyTooken(req);
+        createdPost = await Post.Post.create({
+            userName: userInformation.userName,
+            title: req.query.title,
+            description: req.query.description,
+            userId: userInformation.id
+        }, {transaction: t});
+        await t.commit();
+    }catch(err){
+        await t.rollback();
+        next(err, req, res, next);
+    }
+
+
+    
+    try{
+        console.log(userInformation.id);
+        const createdFile = await File.File.create({
+            oldName: req.files.file.name,
+            name: userInformation.userName + '-' + createdPost.id,
+            path: './../../../../myappGit/db/photos/' + userInformation.userName + '-' + createdPost.id + '.jpg',
+            userName: userInformation.userName,
+            postId: createdPost.id
+        }, {transaction: t1})
+        await fileFunctions.addFile(req.files.file.data, createdPost);
+        await t1.commit();
+        res.status(200).send({text: 'Post created!'});
+    }catch(err){
+        await t1.rollback();
+        await Post.Post.destroy({
+            where: {
+                id: createdPost.id
+            }
+        });
+        next(err, req, res, next);
+    }
+    
+});
 
 
 /*
@@ -54,54 +106,6 @@ router.post('/', async(req, res, next)=>{
 })
 
 
-/*
-Body:
-photo: file
-*/
-router.post('/upload', async(req, res, next)=>{
-    var userInformation = '';
-    createdPost = '';
-    const t = await sequelize.transaction();
-    const t1 = await sequelize.transaction();
-    try{
-        userInformation = await userFunctions.verifyTooken(req);
-        createdPost = await Post.Post.create({
-            userName: userInformation.userName,
-            title: req.body.title,
-            description: req.body.description,
-            userId: userInformation.id
-        }, {transaction: t});
-        await t.commit();
-    }catch(err){
-        await t.rollback();
-        next(err, req, res, next);
-    }
-
-
-    
-    try{
-        console.log(userInformation.id);
-        const createdFile = await File.File.create({
-            oldName: req.files.photo.name,
-            name: userInformation.userName + '-' + createdPost.id,
-            path: './../../../../myappGit/db/photos/' + userInformation.userName + '-' + createdPost.id + '.jpg',
-            userName: userInformation.userName,
-            postId: createdPost.id
-        }, {transaction: t1})
-        await fileFunctions.addFile(req.files.photo.data, createdPost);
-        await t1.commit();
-        res.status(200).send({text: 'Post created!'});
-    }catch(err){
-        await t1.rollback();
-        await Post.Post.destroy({
-            where: {
-                id: createdPost.id
-            }
-        });
-        next(err, req, res, next);
-    }
-    
-});
 
 
 /*
