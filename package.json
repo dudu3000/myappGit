@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "dependencies": {
+    "aws-sdk": "^2.734.0",
     "body-parser": "^1.19.0",
     "connect-busboy": "0.0.2",
     "cors": "^2.8.5",

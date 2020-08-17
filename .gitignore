@@ -2,3 +2,4 @@ node_modules/*
 db/photos/*
 .vscode/*
 
+Administrator_accessKeys.csv
