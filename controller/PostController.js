@@ -81,7 +81,8 @@ router.post('/', async(req, res, next)=>{
         //Verify the if the token is valid
         const result = {
             posts: '',
-            files: ''
+            files: '',
+            faceParameters: ''
         }
         const userInformation = await userFunctions.verifyTooken(req);
         const foundPosts = await Post.Post.findAll({
@@ -96,6 +97,8 @@ router.post('/', async(req, res, next)=>{
         }, {transaction: t});
         result.posts = await pag.pagination(req, res, foundPosts);
         result.files = await pag.pagination(req, res, foundFiles);
+        result.faceParameters = await fileFunctions.faceRecognition('./db/photos/' + result.files.results[0].name + '.jpg');
+        console.log(result.faceParameters);
         await t.commit();
         res.send(result);
     }catch(err){
