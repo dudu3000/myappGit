@@ -18,22 +18,23 @@ const upload = multer({
 })
 
 
-/*
+/*id
 Body:
 photo: file
 */
 router.post('/upload', upload.single("file"), async(req, res, next)=>{
-    console.log(req);
     var userInformation = '';
     createdPost = '';
     const t = await sequelize.transaction();
     const t1 = await sequelize.transaction();
     try{
+        const faceDetection = await fileFunctions.faceRecognition(req.files.file.data);
         userInformation = await userFunctions.verifyTooken(req);
         createdPost = await Post.Post.create({
             userName: userInformation.userName,
             title: req.query.title,
             description: req.query.description,
+            faceDetection: faceDetection,
             userId: userInformation.id
         }, {transaction: t});
         await t.commit();
@@ -45,11 +46,10 @@ router.post('/upload', upload.single("file"), async(req, res, next)=>{
 
     
     try{
-        console.log(userInformation.id);
         const createdFile = await File.File.create({
             oldName: req.files.file.name,
-            name: userInformation.userName + '-' + createdPost.id,
-            path: './../../../../myappGit/db/photos/' + userInformation.userName + '-' + createdPost.id + '.jpg',
+            name: userInformation.userName + '-' + createdPost.id + '.jpg',
+            path: './db/photos/' + userInformation.userName + '-' + createdPost.id + '.jpg',
             userName: userInformation.userName,
             postId: createdPost.id
         }, {transaction: t1})
@@ -97,7 +97,6 @@ router.post('/', async(req, res, next)=>{
         }, {transaction: t});
         result.posts = await pag.pagination(req, res, foundPosts);
         result.files = await pag.pagination(req, res, foundFiles);
-        result.faceParameters = await fileFunctions.faceRecognition('./db/photos/' + result.files.results[0].name + '.jpg');
         console.log(result.faceParameters);
         await t.commit();
         res.send(result);

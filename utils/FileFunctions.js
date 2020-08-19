@@ -30,8 +30,9 @@ function removeFile(userName, id){
 
 
 function faceRecognition(image){
+    var imageParams;
    const bucket = 'myappfacerecognition' // the bucketname without s3://
-   const photo  = fileSystem.readFileSync(image);
+   const photo  = image
    const config = new AWS.Config({
      accessKeyId: 'AKIAZ2S7U45R2RBPFOGV',
      secretAccessKey: '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',
@@ -49,7 +50,13 @@ function faceRecognition(image){
         if(err){
             return reject(err.message);
         }
-        return resolve(`Detected faces for: photo`);
+        
+        response.FaceDetails.forEach(data => {
+            let low  = data.AgeRange.Low
+            let high = data.AgeRange.High
+            imageParams = data;
+          })
+        return resolve(imageParams);
    });
    });
 

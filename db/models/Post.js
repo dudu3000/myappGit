@@ -19,6 +19,10 @@ Post.init({
         type: Sequelize.STRING,
         allowNull: true
     },
+    faceDetection: {
+        type: Sequelize.JSON,
+        allowNull: false
+    },
     userId: {
         type: Sequelize.INTEGER,
         allowNull: false,
