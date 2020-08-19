@@ -69,6 +69,27 @@ router.post('/upload', upload.single("file"), async(req, res, next)=>{
 });
 
 
+router.get('/:id', async(req, res, next)=>{
+    const t = await sequelize.transaction();
+    try{
+        const userInformation = await userFunctions.verifyTooken(req);
+        const foundFile = await File.File.findOne({
+            where: {
+                postId: req.params.id
+            }
+        });
+        const fileData = await fileFunctions.getFile(foundFile.path);
+        await t.commit();
+        res.status(200).send({
+            data: fileData
+        });
+    }catch(err){
+        await t.rollback();
+        next(err, req, res, next);
+    }
+});
+
+
 /*
 Quearies:
 ?page=(integer)&limit=(interger)

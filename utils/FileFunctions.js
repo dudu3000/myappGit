@@ -15,6 +15,11 @@ function addFile(data, userName){
     }
 };
 
+function getFile(path){
+    var fileData = fileSystem.readFileSync(path);
+    return fileData;
+}
+
 //Used to remove a photo when a deleting request comes
 function removeFile(userName, id){
 
@@ -73,6 +78,9 @@ module.exports = {
     },
     faceRecognition: function(image){
         return faceRecognition(image);
+    },
+    getFile: function(path){
+        return getFile(path);
     }
 };
 
