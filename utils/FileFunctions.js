@@ -40,7 +40,7 @@ function faceRecognition(image){
    const photo  = image
    const config = new AWS.Config({
      accessKeyId: 'AKIAZ2S7U45R2RBPFOGV',
-     secretAccessKey: '',
+     secretAccessKey: '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 ',
      region: 'eu-central-1'
    });
    const client = new AWS.Rekognition();
