@@ -36,11 +36,10 @@ function removeFile(userName, id){
 
 function faceRecognition(image){
     var imageParams;
-   const bucket = 'myappfacerecognition' // the bucketname without s3://
    const photo  = image
    const config = new AWS.Config({
-     accessKeyId: 'AKIAZ2S7U45R2RBPFOGV',
-     secretAccessKey: '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 ',
+     accessKeyId: 'AKIAZ2S7U45R53LEZCOH',
+     secretAccessKey: '',
      region: 'eu-central-1'
    });
    const client = new AWS.Rekognition();
