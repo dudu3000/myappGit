@@ -21,6 +21,7 @@ const upload = multer({
 /*id
 Body:
 photo: file
+Params: title, description
 */
 router.post('/upload', upload.single("file"), async(req, res, next)=>{
     var userInformation = '';
@@ -92,7 +93,7 @@ router.get('/:id', async(req, res, next)=>{
 
 /*
 Quearies:
-?page=(integer)&limit=(interger)
+/?page=(integer)&limit=(interger)
 Body:
 userName: string
 */
@@ -102,8 +103,7 @@ router.post('/', async(req, res, next)=>{
         //Verify the if the token is valid
         const result = {
             posts: '',
-            files: '',
-            faceParameters: ''
+            files: ''
         }
         const userInformation = await userFunctions.verifyTooken(req);
         const foundPosts = await Post.Post.findAll({
@@ -118,7 +118,6 @@ router.post('/', async(req, res, next)=>{
         }, {transaction: t});
         result.posts = await pag.pagination(req, res, foundPosts);
         result.files = await pag.pagination(req, res, foundFiles);
-        console.log(result.faceParameters);
         await t.commit();
         res.send(result);
     }catch(err){

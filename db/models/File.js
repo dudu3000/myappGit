@@ -29,7 +29,7 @@ File.init({
         references: {
             model: 'Post',
             key: 'id',
-            deferrable: Sequelize.Deferrable.INITIALLY_IMMEDIATE
+            deferrable: Sequelize.Deferrable.INITIALLY_DEFERRED
           }
     }
 },{

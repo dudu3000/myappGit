@@ -49,15 +49,14 @@ function createToken(foundUser, requestMinutes){
 //Used everytime the user tries to action something that requires to be loggedin
 async function verifyTooken(requestHeaders){
 
-    const authHeader = requestHeaders.headers['authorization'];
-    const token = authHeader;
+    const token = requestHeaders.headers['authorization'];
 
     if(token == null)
         errors.failUser("Token is missing!\n", 401);
     
     const user = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
         if(err)
-        errors.failUser('Invalid token!\n', 401);
+            errors.failUser('Invalid token!\n', 401);
         return user;
     });
     return user;

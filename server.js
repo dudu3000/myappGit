@@ -18,7 +18,6 @@ const post = require('./controller/PostController.js');
 const db = require('./db/index.js');
 
 
-//Parsing JSON
 app.use(express.json());
 app.use(fileUpload());
 app.use(cors());
@@ -45,7 +44,6 @@ app.use(function(err, req, res, next){
 
 
 //Establish db connection and stop the server if the connection fails.
-//!db.sequelize.authenticate().then((force)
 db.sequelize.authenticate().then(() => {
     console.log('Connection has been established successfully.');
     //Listen for requests

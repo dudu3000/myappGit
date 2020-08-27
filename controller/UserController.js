@@ -18,7 +18,7 @@ const sequelize = userdB.sequelize;
 
 /*
 Quearies:
-?page=(integer)&limit=(interger)
+/?page=(integer)&limit=(interger)
 */
 router.get('/', async(req, res, next)=>{
     const t = await sequelize.transaction();
