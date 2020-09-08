@@ -86,22 +86,9 @@ router.get('/face/:id', async(req, res, next)=>{
             limit: limit
         });
         const faceSimilarity = await fileFunctions.calculateParameters(foundPost.faceDetection, allPosts);
-        var selectFourItems = await fileFunctions.filterPosts(faceSimilarity, allPosts, req.params.id);
-        while(!selectFourItems){
-            skip += 100;
-            allPosts = await Post.Post.findAll({
-                offset: skip,
-                limit: limit
-            });
-            if(allPosts.length < limit){
-                errors.failPost('Nothing similar to this post!');
-                break;
-            }
-            selectFourItems = await fileFunctions.filterPosts(faceSimilarity, allPosts, req.params.id);
-        }
         await t.commit();
         res.status(200).send({
-            selectedPosts: selectFourItems
+            faceSimilarity: faceSimilarity
         });
     }catch(err){
         await t.rollback();

@@ -2,7 +2,7 @@ const fileSystem = require('fs');
 const errors = require('./../utils/ErrorsHandler.js');
 //Copyright 2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
 //PDX-License-Identifier: MIT-0 (For details, see https://github.com/awsdocs/amazon-rekognition-developer-guide/blob/master/LICENSE-SAMPLECODE.)
-const AWS = require('aws-sdk')
+const AWS = require('aws-sdk');
 
 //Used to add a photo when a post reqest comes
 function addFile(data, userName){
@@ -71,7 +71,10 @@ function faceRecognition(image){
 
 
 function calculateParameters(params, posts){
-    var similarityPercentage = ;
+    var similarityPercentage = {
+        id: 0,
+        percentage: 0
+    };
     var percentages = {
         genderPercentage: 0,
         agePercentage: 0,
@@ -80,8 +83,7 @@ function calculateParameters(params, posts){
         eyeglassesPercentage: 0,
         sunglassesPercentage: 0,
         emotionPercentage: 0
-    }
-
+    };
     [
         subjectAgeL,
         subjectAgeH,
@@ -96,8 +98,8 @@ function calculateParameters(params, posts){
         subjectSunglasses,
         subjectSunglassesType,
         subjectSmile,
-        subjectSmileType,
-    ] = [
+        subjectSmileType
+    ]=[
         params.AgeRange.Low,
         params.AgeRange.High,
         params.Emotions[0].Confidence,
@@ -112,12 +114,13 @@ function calculateParameters(params, posts){
         params.Sunglasses.Value,
         params.Smile.Confidence,
         params.Smile.Value,
-    ]
+    ];
 
     var age = (subjectAgeL + subjectAgeH)/2;
     
     for(var i = 0; i < posts.length; i++){
         [
+            id,
             comparedGenderValue,
             comparedGenderConfidence,
             comparedAgeLow,
@@ -133,6 +136,7 @@ function calculateParameters(params, posts){
             comparedEmotionValue,
             comparedEmotionConfidence
         ]=[
+            posts[i].id,
             posts[i].faceDetection.Gender.Value,
             posts[i].faceDetection.Gender.Confidence,
             posts[i].faceDetection.AgeRange.Low,
@@ -149,154 +153,56 @@ function calculateParameters(params, posts){
             posts[i].faceDetection.Emotions[0].Confidence
         ]
         var comparedAge = (comparedAgeLow + comparedAgeHigh)/2;
-
-        if(abs(age - comparedAge) > 5)
+        if(Math.abs(age - comparedAge) > 5)
             percentages.agePercentage = 0;
         else
-            percentages.agePercentage = 100 - (abs(ag - comparedAge)*25)/100;
+            percentages.agePercentage = 100 - (Math.abs(age - comparedAge)*25)/100;
         
-        if(abs(subjectGender - comparedGenderConfidence) > 30 && subjectGenerType !== comparedGenderValue)
+        if(subjectGenerType !== comparedGenderValue)
             percentages.genderPercentage = 0;
         else
-            percentages.genderPercentage = 100 - (abs(subjectGender - comparedSmileConfidence)*3.33)/100;
+            percentages.genderPercentage = 100 - (Math.abs(subjectGender - comparedGenderConfidence))/100;
 
         
-        if(abs(subjectBeard - comparedBeardConfidence) > 30 && subjectBeardType !== comparedBeardValue)
+        if(subjectBeardType !== comparedBeardValue)
             percentages.beardPercentage = 0;
         else
-            percentages.beardPercentage = 100 - (abs(subjectBeard - comparedBeardConfidence)*3.33)/100;
+            percentages.beardPercentage = 100 - (Math.abs(subjectBeard - comparedBeardConfidence))/100;
 
             
-        if(abs(subjectSmile - comparedSmileConfidence) > 30 && subjectSmileType !== comparedSmileValue)
+        if(subjectSmileType !== comparedSmileValue)
             percentages.smilePercentage = 0;
         else
-            percentages.smilePercentage = 100 - (abs(subjectSmile - comparedSmileConfidence)*3.33)/100;
+            percentages.smilePercentage = 100 - (Math.abs(subjectSmile - comparedSmileConfidence))/100;
 
-            
-        if(abs(subjectEyeglasses - comparedEyeglassesConfidence) > 30 && subjectEyeglassesType !== comparedEyeglassesValue)
-            percentages.EyeglassesPercentage = 0;
+        if(subjectEyeglassesType !== comparedEyeglassesValue)
+            percentages.eyeglassesPercentage = 0;
         else
-            percentages.EyeglassesPercentage = 100 - (abs(subjectEyeglasses - comparedEyeglassesConfidence)*3.33)/100;
+            percentages.eyeglassesPercentage = 100 - (Math.abs(subjectEyeglasses - comparedEyeglassesConfidence))/100;
 
             
-        if(abs(subjectSunglasses - comparedSunglassesConfidence) > 30 && subjectSunglassesType !== comparedSunglassesValue)
+        if(subjectSunglassesType !== comparedSunglassesValue)
             percentages.sunglassesPercentage = 0;
         else
-            percentages.sunglassesPercentage = 100 - (abs(subjectSunglasses - comparedSunglassesConfidence)*3.33)/100;
+            percentages.sunglassesPercentage = 100 - (Math.abs(subjectSunglasses - comparedSunglassesConfidence))/100;
 
             
-        if(abs(subjectEmotion - comparedEmotionConfidence) > 30 && subjectEmotionType !== comparedEmotionValue)
+        if(subjectEmotionType !== comparedEmotionValue)
             percentages.emotionPercentage = 0;
         else
-            percentages.emotionPercentage = 100 - (abs(subjectEmotion - comparedEmotionConfidence)*3.33)/100;
+            percentages.emotionPercentage = 100 - (Math.abs(subjectEmotion - comparedEmotionConfidence))/100;
+
+        similarityPercentage[i]={
+            id: id,
+            percentage: (percentages.agePercentage*20 + percentages.genderPercentage*20 + percentages.beardPercentage*20 + percentages.smilePercentage*10 + percentages.eyeglassesPercentage*10 + percentages.sunglassesPercentage*10 + percentages.emotionPercentage*10)/100
+        };
     }
+
+    return similarityPercentage;
 
 }
 
 
-
-function filterPosts(filterParams, posts, id){
-    var indexes = [];
-    var indexesIncrement = 0;
-    [
-        f_gender,
-        f_beard,
-        f_age,
-        f_eyeglasses,
-        f_sunglasses,
-        f_smile,
-        f_emotion,
-        f_genderL,
-        f_genderH,
-        f_beardL,
-        f_beardH,
-        f_eyeglassesL,
-        f_eyeglassesH,
-        f_sunglassesL,
-        f_sunglassesH,
-        f_smileL,
-        f_smileH,
-        f_emotionL,
-        f_emotionH,
-        f_ageL,
-        f_ageH
-    ] = [
-        filterParams.gender,
-        filterParams.beard,
-        filterParams.age, 
-        filterParams.eyeglasses,
-        filterParams.sunglasses,
-        filterParams.smile,
-        filterParams.emotion, 
-        filterParams.gender_confidence_range.Low, 
-        filterParams.gender_confidence_range.High, 
-        filterParams.beard_confidence_range.Low, 
-        filterParams.beard_confidence_range.High, 
-        filterParams.eyeglasses_confidence_range.Low,
-        filterParams.eyeglasses_confidence_range.High,    
-        filterParams.sunglasses_confidence_range.Low,
-        filterParams.sunglasses_confidence_range.High,
-        filterParams.smile_confidence_range.Low,
-        filterParams.smile_confidence_range.High,
-        filterParams.emotion_confidence_range.Low,
-        filterParams.emotion_confidence_range.High,
-        filterParams.age_range.Low,
-        filterParams.age_range.High
-    ]
-    for(var increment = 0; increment < posts.length; increment++){
-        if(posts[increment].id == id){
-            indexes[indexesIncrement] = increment;
-            indexesIncrement++;
-        }
-        if(f_gender == posts[increment].faceDetection.Gender.Value && (posts[increment].faceDetection.Gender.Confidence < f_genderL && posts[increment].faceDetection.Gender.Confidence > f_genderH)){
-                indexes[indexesIncrement] = increment;
-                indexesIncrement++;
-        }else if(f_gender !== posts[increment].faceDetection.Gender.Value){
-                indexes[indexesIncrement] = increment;
-                indexesIncrement++;
-        }else if(f_beard == posts[increment].faceDetection.Beard.Value && (posts[increment].faceDetection.Beard.Confidence < f_beardL && posts[increment].faceDetection.Beard.Confidence > f_beardH)){
-                indexes[indexesIncrement] = increment;
-                indexesIncrement++;
-        }else if(f_beard !== posts[increment].faceDetection.Beard.Value){
-            indexes[indexesIncrement] = increment;
-            indexesIncrement++;
-        }else if((posts[increment].faceDetection.AgeRange.Low + posts[increment].faceDetection.AgeRange.High)/2 < f_ageL || (posts[increment].faceDetection.AgeRange.Low + posts[increment].faceDetection.AgeRange.High)/2 > f_ageH){
-                indexes[indexesIncrement] = increment;
-                indexesIncrement++;
-        }else if(f_eyeglasses == posts[increment].faceDetection.Eyeglasses.Value && (posts[increment].faceDetection.Eyeglasses.Confidence < f_eyeglassesL && posts[increment].faceDetection.Eyeglasses.Confidence > f_eyeglassesH)){
-                indexes[indexesIncrement] = increment;
-                indexesIncrement++;
-        }else if(f_sunglasses == posts[increment].faceDetection.Sunglasses.Value && (posts[increment].faceDetection.Sunglasses.Confidence < f_sunglassesL && posts[increment].faceDetection.Sunglasses.Confidence > f_sunglassesH)){
-                indexes[indexesIncrement] = increment;
-                indexesIncrement++;
-        }else if(f_smile == posts[increment].faceDetection.Smile.Value && (posts[increment].faceDetection.Smile.Confidence < f_smileL && posts[increment].faceDetection.Smile.Confidence > f_smileH)){
-                indexes[indexesIncrement] = increment;
-                indexesIncrement++;
-        }else if(f_emotion == posts[increment].faceDetection.Emotions[0].Type && (posts[increment].faceDetection.Emotions[0].Type == f_emotion && (posts[increment].faceDetection.Emotions[0].Confidence < f_emotionL && posts[increment].faceDetection.Emotions[0].Confidence > f_emotionH))){
-                indexes[indexesIncrement] = increment;
-                indexesIncrement++;
-        }else if(f_eyeglasses !== posts[increment].faceDetection.Eyeglasses.Value && f_sunglasses !== posts[increment].faceDetection.Sunglasses.Value && f_smile !== posts[increment].faceDetection.Smile.Value && f_emotion !== posts[increment].faceDetection.Emotions[0].Type){
-            indexes[indexesIncrement] = increment;
-            indexesIncrement++;
-        }
-
-    }
-    var filtered = posts.filter(function(value, index, arr){
-        if(!indexes.includes(index))
-            return value;
-    })
-    var result = {};
-    if(filtered.length < 3){
-        return false;
-    }else{
-        var result = {
-            post0: filtered[0].id,
-            post1: filtered[1].id,
-            post2: filtered[2].id
-        }
-    }
-    return result;
-}
 
 
 
@@ -316,9 +222,6 @@ module.exports = {
     },
     calculateParameters: function(params, posts){
         return calculateParameters(params, posts);
-    },
-    filterPosts: function(filterParams, posts, id){
-        return filterPosts(filterParams, posts, id);
     }
 };
 

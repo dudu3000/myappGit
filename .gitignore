@@ -1,6 +1,7 @@
 node_modules/*
 db/photos/*
 .vscode/*
-.keys
+.env
+.keys.txt
 
 Administrator_accessKeys.csv
