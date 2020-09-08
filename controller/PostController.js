@@ -10,6 +10,7 @@ const postdB = require('./../db/index.js');
 const Post = require('../db/models/Post.js');
 const File = require('../db/models/File.js');
 const sequelize = postdB.sequelize;
+const errors = require('./../utils/ErrorsHandler.js');
 
 
 
@@ -68,6 +69,46 @@ router.post('/upload', upload.single("file"), async(req, res, next)=>{
     }
     
 });
+
+//!TODO Nu uita sa adaugi verificarea tokenului
+router.get('/face/:id', async(req, res, next)=>{
+    const t = await sequelize.transaction();
+    var skip = 0;
+    var limit = 100;
+    try{
+        const foundPost = await Post.Post.findOne({
+            where: {
+                id: req.params.id
+            }
+        });
+        var allPosts = await Post.Post.findAll({
+            offset: skip,
+            limit: limit
+        });
+        const faceSimilarity = await fileFunctions.calculateParameters(foundPost.faceDetection, allPosts);
+        var selectFourItems = await fileFunctions.filterPosts(faceSimilarity, allPosts, req.params.id);
+        while(!selectFourItems){
+            skip += 100;
+            allPosts = await Post.Post.findAll({
+                offset: skip,
+                limit: limit
+            });
+            if(allPosts.length < limit){
+                errors.failPost('Nothing similar to this post!');
+                break;
+            }
+            selectFourItems = await fileFunctions.filterPosts(faceSimilarity, allPosts, req.params.id);
+        }
+        await t.commit();
+        res.status(200).send({
+            selectedPosts: selectFourItems
+        });
+    }catch(err){
+        await t.rollback();
+        next(err, req, res, next);
+    }
+});
+
 
 
 router.get('/:id', async(req, res, next)=>{
