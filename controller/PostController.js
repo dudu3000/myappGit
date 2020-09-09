@@ -72,7 +72,13 @@ router.post('/upload', upload.single("file"), async(req, res, next)=>{
 
 //!TODO Nu uita sa adaugi verificarea tokenului
 router.get('/face/:id', async(req, res, next)=>{
+    const numberOfReturnedPosts = 4;
     const t = await sequelize.transaction();
+    var fileData = [{
+        data: 0,
+        userName: '',
+        percentage: 0
+    }];
     var skip = 0;
     var limit = 100;
     try{
@@ -85,10 +91,22 @@ router.get('/face/:id', async(req, res, next)=>{
             offset: skip,
             limit: limit
         });
-        const faceSimilarity = await fileFunctions.calculateParameters(foundPost.faceDetection, allPosts);
+        const faceSimilarity = await fileFunctions.calculateParameters(foundPost.faceDetection, allPosts, req.params.id);
+        for(var incrementGetFiles = 0; incrementGetFiles < numberOfReturnedPosts; incrementGetFiles++){
+            const foundFile = await File.File.findOne({
+                where: {
+                    postId: faceSimilarity[incrementGetFiles].id
+                }
+            });
+            fileData[incrementGetFiles] = {
+                data: await fileFunctions.encode(new Uint8Array(await fileFunctions.getFile(foundFile.path))),
+                userName: foundFile.userName,
+                percentage: faceSimilarity[incrementGetFiles].percentage
+            }
+        }
         await t.commit();
         res.status(200).send({
-            faceSimilarity: faceSimilarity
+            data: fileData
         });
     }catch(err){
         await t.rollback();
@@ -107,7 +125,7 @@ router.get('/:id', async(req, res, next)=>{
                 postId: req.params.id
             }
         });
-        const fileData = await fileFunctions.getFile(foundFile.path);
+        const fileData = await fileFunctions.encode(new Uint8Array(await fileFunctions.getFile(foundFile.path)));
         await t.commit();
         res.status(200).send({
             data: fileData

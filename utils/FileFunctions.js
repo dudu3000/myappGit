@@ -70,11 +70,18 @@ function faceRecognition(image){
 }
 
 
-function calculateParameters(params, posts){
-    var similarityPercentage = {
-        id: 0,
+function calculateParameters(params, posts, idOfOriginalPost){
+    const GENDER_FINAL_PERCENTAGE = 20;
+    const AGE_FINAL_PERCENTAGE = 20;
+    const BEARD_FINAL_PERCENTAGE = 20;
+    const SMILE_FINAL_PERCENTAGE = 10;
+    const EYEGLASSES_FINAL_PERCENTAGE = 10;
+    const SUNGLASSES_PERCENTAGE = 10;
+    const EMOTION_PERCENTAGE = 10;
+    var similarityPercentage = [{
+        id: -1,
         percentage: 0
-    };
+    }];
     var percentages = {
         genderPercentage: 0,
         agePercentage: 0,
@@ -115,7 +122,7 @@ function calculateParameters(params, posts){
         params.Smile.Confidence,
         params.Smile.Value,
     ];
-
+    
     var age = (subjectAgeL + subjectAgeH)/2;
     
     for(var i = 0; i < posts.length; i++){
@@ -157,50 +164,85 @@ function calculateParameters(params, posts){
             percentages.agePercentage = 0;
         else
             percentages.agePercentage = 100 - (Math.abs(age - comparedAge)*25)/100;
-        
         if(subjectGenerType !== comparedGenderValue)
             percentages.genderPercentage = 0;
         else
             percentages.genderPercentage = 100 - (Math.abs(subjectGender - comparedGenderConfidence))/100;
-
-        
         if(subjectBeardType !== comparedBeardValue)
             percentages.beardPercentage = 0;
         else
             percentages.beardPercentage = 100 - (Math.abs(subjectBeard - comparedBeardConfidence))/100;
-
-            
         if(subjectSmileType !== comparedSmileValue)
             percentages.smilePercentage = 0;
         else
             percentages.smilePercentage = 100 - (Math.abs(subjectSmile - comparedSmileConfidence))/100;
-
         if(subjectEyeglassesType !== comparedEyeglassesValue)
             percentages.eyeglassesPercentage = 0;
         else
             percentages.eyeglassesPercentage = 100 - (Math.abs(subjectEyeglasses - comparedEyeglassesConfidence))/100;
-
-            
         if(subjectSunglassesType !== comparedSunglassesValue)
             percentages.sunglassesPercentage = 0;
         else
             percentages.sunglassesPercentage = 100 - (Math.abs(subjectSunglasses - comparedSunglassesConfidence))/100;
-
-            
         if(subjectEmotionType !== comparedEmotionValue)
             percentages.emotionPercentage = 0;
         else
             percentages.emotionPercentage = 100 - (Math.abs(subjectEmotion - comparedEmotionConfidence))/100;
-
-        similarityPercentage[i]={
+        var finalPercentageOfPost = (percentages.agePercentage*AGE_FINAL_PERCENTAGE + 
+                                    percentages.genderPercentage*GENDER_FINAL_PERCENTAGE + 
+                                    percentages.beardPercentage*BEARD_FINAL_PERCENTAGE + 
+                                    percentages.smilePercentage*SMILE_FINAL_PERCENTAGE + 
+                                    percentages.eyeglassesPercentage*EYEGLASSES_FINAL_PERCENTAGE + 
+                                    percentages.sunglassesPercentage*SUNGLASSES_PERCENTAGE + 
+                                    percentages.emotionPercentage*EMOTION_PERCENTAGE
+                                    )/100;
+        var sortedIndex = 0;       
+        for(var increment = 0 ; increment < similarityPercentage.length; increment ++){
+            if(similarityPercentage[increment]. percentage > finalPercentageOfPost)
+                sortedIndex++;
+        }
+        similarityPercentage.splice(sortedIndex, 0, {
             id: id,
-            percentage: (percentages.agePercentage*20 + percentages.genderPercentage*20 + percentages.beardPercentage*20 + percentages.smilePercentage*10 + percentages.eyeglassesPercentage*10 + percentages.sunglassesPercentage*10 + percentages.emotionPercentage*10)/100
-        };
+            percentage: finalPercentageOfPost
+        })
     }
+    similarityPercentage.splice(similarityPercentage.length-1, 1);
+    similarityPercentage.splice(0, 1);
 
     return similarityPercentage;
+    
 
 }
+
+
+function encode(input) {
+    var keyStr = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
+    var output = "";
+    var chr1, chr2, chr3, enc1, enc2, enc3, enc4;
+    var i = 0;
+
+    while (i < input.length) {
+        chr1 = input[i++];
+        chr2 = i < input.length ? input[i++] : Number.NaN; // Not sure if the index 
+        chr3 = i < input.length ? input[i++] : Number.NaN; // checks are needed here
+
+        enc1 = chr1 >> 2;
+        enc2 = ((chr1 & 3) << 4) | (chr2 >> 4);
+        enc3 = ((chr2 & 15) << 2) | (chr3 >> 6);
+        enc4 = chr3 & 63;
+
+        if (isNaN(chr2)) {
+            enc3 = enc4 = 64;
+        } else if (isNaN(chr3)) {
+            enc4 = 64;
+        }
+        output += keyStr.charAt(enc1) + keyStr.charAt(enc2) +
+                  keyStr.charAt(enc3) + keyStr.charAt(enc4);
+    }
+    return output;
+  }
+
+
 
 
 
@@ -220,8 +262,11 @@ module.exports = {
     getFile: function(path){
         return getFile(path);
     },
-    calculateParameters: function(params, posts){
-        return calculateParameters(params, posts);
+    calculateParameters: function(params, posts, idOfOriginalPost){
+        return calculateParameters(params, posts, idOfOriginalPost);
+    },
+    encode: function(input){
+        return encode(input);
     }
 };
 
