@@ -70,7 +70,6 @@ router.post('/upload', upload.single("file"), async(req, res, next)=>{
     
 });
 
-//!TODO Nu uita sa adaugi verificarea tokenului
 router.get('/face/:id', async(req, res, next)=>{
     const numberOfReturnedPosts = 4;
     const t = await sequelize.transaction();
@@ -82,6 +81,7 @@ router.get('/face/:id', async(req, res, next)=>{
     var skip = 0;
     var limit = 100;
     try{
+        userInformation = await userFunctions.verifyTooken(req);
         const foundPost = await Post.Post.findOne({
             where: {
                 id: req.params.id
