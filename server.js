@@ -11,8 +11,6 @@ const models = require('./db/index.js');
 require('dotenv').config();
 
 
-//Require every controller and the index fo db
-const home = require('./controller/HomeController.js');
 const user = require('./controller/UserController.js');
 const post = require('./controller/PostController.js');
 const db = require('./db/index.js');
@@ -23,7 +21,6 @@ app.use(fileUpload());
 app.use(cors());
 
 
-app.use('/', home);
 app.use('/user', user);
 app.use('/post', post);
 
@@ -34,7 +31,7 @@ app.use(function(err, req, res, next){
     else if(err instanceof Sequelize.ForeignKeyConstraintError)
         res.status(422).send({error: 'You can not do this action with this account!'});
     else if(err.code == 401){
-        res.status(401).send({error: 'Token invalid!'});
+        res.status(401).send({error: 'Token invalid! You have been disconnected!'});
     }else{
         res.status(404).send({error: err.message});
     }

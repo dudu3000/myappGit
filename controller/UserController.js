@@ -27,7 +27,10 @@ router.get('/', async(req, res, next)=>{
         const foundUsers = await User.User.findAll({}, {transaction: t});
         await pag.pagination(req, res, foundUsers);
         await t.commit();
-        res.status(200).send(res.paginatedResults);
+        res.status(200).send({
+            paginated: res.paginatedResults,
+            tokne: userInformation.token
+        });
     }catch(err){
         await t.rollback();
         next(err, req, res, next);
@@ -52,19 +55,26 @@ password: string
 minutes: int
 */
 router.post('/login', async(req, res, next)=>{
+    [
+        userName,
+        password,
+    ]=[
+        req.body.userName,
+        req.body.password,
+    ];
 
     const t = await sequelize.transaction();
     try{
         const foundUser = await User.User.findOne({
             where: {
-                userName: req.body.userName,
-                password: req.body.password
+                userName: userName,
+                password: password
             }
         }, {transaction: t });
         await userFunctions.validateLogin(foundUser);
-        const accessToken = await userFunctions.createToken(foundUser, req.body.minutes);
+        const accessToken = await userFunctions.createToken(foundUser);
         await t.commit();
-        res.status(200).send({text: 'You\'re now logged in! You have ' + req.body.minutes + ' minutes before you\'ll be disconnected!\n', token: accessToken});
+        res.status(200).send({text: 'You\'re now logged in!\n', token: accessToken});
     }catch(err){
         await t.rollback();
         next(err, req, res, next);
@@ -82,17 +92,34 @@ email: string
 birthDay: yyyy-mm-dd
 */ 
 router.post('/', async(req, res, next)=>{
+    [
+        firstName,
+        lastName,
+        userName,
+        password,
+        email,
+        birthDay,
+        token
+    ]=[
+        req.body.firstName,
+        req.body.lastName,
+        req.body.userName,
+        req.body.password,
+        req.body.email,
+        req.body.birthDay,
+        req.body.tooken
+    ];
     const t = await sequelize.transaction();
     try{
         await userFunctions.validateRegister(req.body);
         const createdUser = await User.User.create({
-            firstName: req.body.firstName,
-            lastName: req.body.lastName,
-            userName: req.body.userName,
-            password: req.body.password,
-            email: req.body.email,
-            birthDay: req.body.birthDay,
-            tooken: req.body.tooken,
+            firstName: firstName,
+            lastName: lastName,
+            userName: userName,
+            password: password,
+            email: email,
+            birthDay: birthDay,
+            tooken: token,
             minutes: 0
         }, {transaction: t});
         await t.commit();
@@ -113,7 +140,7 @@ router.delete('/', async(req, res, next)=>{
         const userInformation = await userFunctions.verifyTooken(req);
         const deletedUser = await User.User.destroy({
             where: {
-                userName: userInformation.userName
+                userName: userInformation.user.userName
             }
         }, {transaction: t});
         await t.commit();

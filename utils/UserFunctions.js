@@ -2,6 +2,7 @@ const User = require('./../db/models/User.js');
 var moment = require('moment');
 const jwt = require('jsonwebtoken');
 const errors = require('./../utils/ErrorsHandler.js');
+const USER_TIME = '5m';
 
 //Used for Login
 function validateLogin(foundUser){
@@ -29,7 +30,7 @@ function validateRegister(createdUser){
 
 
 //Used on login to create a token
-function createToken(foundUser, requestMinutes){
+function createToken(foundUser){
 
     const user = {
         userName: foundUser.userName,
@@ -37,12 +38,9 @@ function createToken(foundUser, requestMinutes){
         birthDay: foundUser.birthDay,
         id: foundUser.id
     }
-    //Throw error if the requested amount of minutes is over 60 minutes
-    if(requestMinutes > 60)
-        errors.failUser('The amount of time requested is over 60 minutes!');
     
     //Create the token
-    const accessToken = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: requestMinutes + 'm' })
+    const accessToken = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: USER_TIME });
     return accessToken;
 }
 
@@ -54,12 +52,18 @@ async function verifyTooken(requestHeaders){
     if(token == null)
         errors.failUser("Token is missing!\n", 401);
     
-    const user = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
+    var user = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
         if(err)
             errors.failUser('Invalid token!\n', 401);
         return user;
     });
-    return user;
+    delete user.iat;
+    delete user.exp;
+    const accessToken = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: USER_TIME });
+    return {
+        user: user,
+        token: accessToken
+    };
 }
 
 
@@ -70,8 +74,8 @@ module.exports = {
     validateRegister: function(createdUser){
         return validateRegister(createdUser);
     },
-    createToken: function(foundUser, requestMinutes){
-        return createToken(foundUser, requestMinutes);
+    createToken: function(foundUser){
+        return createToken(foundUser);
     },
     verifyTooken: function(requestHeaders){
         return verifyTooken(requestHeaders);

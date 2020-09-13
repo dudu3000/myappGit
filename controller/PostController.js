@@ -25,19 +25,37 @@ photo: file
 Params: title, description
 */
 router.post('/upload', upload.single("file"), async(req, res, next)=>{
+    [
+        imageData,
+        postTitle,
+        postDescription,
+        imageOldName
+    ]=[
+        req.files.file.data,
+        req.query.title,
+        req.query.description,
+        req.files.file.name,
+    ];
     var userInformation = '';
     createdPost = '';
     const t = await sequelize.transaction();
     const t1 = await sequelize.transaction();
     try{
-        const faceDetection = await fileFunctions.faceRecognition(req.files.file.data);
         userInformation = await userFunctions.verifyTooken(req);
+        [
+            userName,
+            id
+        ]=[
+            userInformation.user.userName,
+            userInformation.id
+        ];
+        const faceDetection = await fileFunctions.faceRecognition(imageData);
         createdPost = await Post.Post.create({
-            userName: userInformation.userName,
-            title: req.query.title,
-            description: req.query.description,
+            userName: userName,
+            title: postTitle,
+            description: postDescription,
             faceDetection: faceDetection,
-            userId: userInformation.id
+            userId: id
         }, {transaction: t});
         await t.commit();
     }catch(err){
@@ -49,15 +67,15 @@ router.post('/upload', upload.single("file"), async(req, res, next)=>{
     
     try{
         const createdFile = await File.File.create({
-            oldName: req.files.file.name,
-            name: userInformation.userName + '-' + createdPost.id + '.jpg',
-            path: './db/photos/' + userInformation.userName + '-' + createdPost.id + '.jpg',
-            userName: userInformation.userName,
+            oldName: imageOldName,
+            name: userName + '-' + createdPost.id + '.jpg',
+            path: './db/photos/' + userName + '-' + createdPost.id + '.jpg',
+            userName: userName,
             postId: createdPost.id
         }, {transaction: t1})
-        await fileFunctions.addFile(req.files.file.data, createdPost);
+        await fileFunctions.addFile(imageData, createdPost);
         await t1.commit();
-        res.status(200).send({text: 'Post created!'});
+        res.status(200).send({text: 'Post created!', token: userInformation.token});
     }catch(err){
         await t1.rollback();
         await Post.Post.destroy({
@@ -71,6 +89,11 @@ router.post('/upload', upload.single("file"), async(req, res, next)=>{
 });
 
 router.get('/face/:id', async(req, res, next)=>{
+    [
+        idOfPost
+    ]=[
+        req.params.id
+    ];
     const numberOfReturnedPosts = 4;
     const t = await sequelize.transaction();
     var fileData = [{
@@ -81,17 +104,17 @@ router.get('/face/:id', async(req, res, next)=>{
     var skip = 0;
     var limit = 100;
     try{
-        userInformation = await userFunctions.verifyTooken(req);
+        const userInformation = await userFunctions.verifyTooken(req);
         const foundPost = await Post.Post.findOne({
             where: {
-                id: req.params.id
+                id: idOfPost
             }
         });
         var allPosts = await Post.Post.findAll({
             offset: skip,
             limit: limit
         });
-        const faceSimilarity = await fileFunctions.calculateParameters(foundPost.faceDetection, allPosts, req.params.id);
+        const faceSimilarity = await fileFunctions.calculateParameters(foundPost.faceDetection, allPosts, idOfPost);
         for(var incrementGetFiles = 0; incrementGetFiles < numberOfReturnedPosts; incrementGetFiles++){
             const foundFile = await File.File.findOne({
                 where: {
@@ -106,7 +129,8 @@ router.get('/face/:id', async(req, res, next)=>{
         }
         await t.commit();
         res.status(200).send({
-            data: fileData
+            data: fileData,
+            token: userInformation.token
         });
     }catch(err){
         await t.rollback();
@@ -144,6 +168,11 @@ Body:
 userName: string
 */
 router.post('/', async(req, res, next)=>{
+    [
+        userName
+    ]=[
+        req.body.userName
+    ];
     const t = await sequelize.transaction();
     try{
         //Verify the if the token is valid
@@ -154,18 +183,21 @@ router.post('/', async(req, res, next)=>{
         const userInformation = await userFunctions.verifyTooken(req);
         const foundPosts = await Post.Post.findAll({
             where: {
-                userName: req.body.userName
+                userName: userName
             }
         }, {transaction: t});
         const foundFiles = await File.File.findAll({
             where: {
-                userName: req.body.userName
+                userName: userName
             }
         }, {transaction: t});
         result.posts = await pag.pagination(req, res, foundPosts);
         result.files = await pag.pagination(req, res, foundFiles);
         await t.commit();
-        res.send(result);
+        res.send({
+            result: result,
+            token: userInformation.token
+        });
     }catch(err){
         await t.rollback();
         next(err, req, res, next);
@@ -181,24 +213,34 @@ Body:
 id: integer
 */
 router.delete('/', async(req, res, next)=>{
+    [
+        idOfPost
+    ]=[
+        req.body.id
+    ];
     const t = await sequelize.transaction();
     try{
         const userInformation = await userFunctions.verifyTooken(req);
+        [
+            userName
+        ]=[
+            userInformation.user.userName
+        ];
         const deletedFile = await File.File.destroy({
             where: {
-                postId: req.body.id,
-                userName: userInformation.userName
+                postId: idOfPost,
+                userName: userName
             }
         }, {transaction: t});
         const deletedPost = await Post.Post.destroy({
             where: {
-                id: req.body.id,
-                userName: userInformation.userName
+                id: idOfPost,
+                userName: userName
             }
         }, {transaction: t});
-        await fileFunctions.removeFile(userInformation.userName, req.body.id);
+        await fileFunctions.removeFile(userName, idOfPost);
         await t.commit();
-        res.status(200).send({text: 'Post deleted!'});
+        res.status(200).send({text: 'Post deleted!', token: userInformation.token});
     }catch(err){
         await t.rollback();
         next(err, req, res, next);

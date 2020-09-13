@@ -35,8 +35,7 @@ function removeFile(userName, id){
 
 
 function faceRecognition(image){
-    var imageParams;
-   const bucket = 'myappfacerecognition' // the bucketname without s3://
+   var imageParams;
    const photo  = image
    const config = new AWS.Config({
      accessKeyId: process.env.AWS_ACCESS_KEY_ID,
@@ -57,8 +56,6 @@ function faceRecognition(image){
         }
         
         response.FaceDetails.forEach(data => {
-            let low  = data.AgeRange.Low
-            let high = data.AgeRange.High
             imageParams = data;
           })
         return resolve(imageParams);
@@ -68,6 +65,38 @@ function faceRecognition(image){
 
 
 }
+
+
+//!TODO Function ready
+// function faceComparing(sourceImage, targetImage){
+//    var similarity;
+//    const config = new AWS.Config({
+//      accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+//      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+//      region: process.env.AWS_REGION
+//    });
+//    const client = new AWS.Rekognition();
+//    const params = {
+//      SourceImage: {
+//        Bytes: sourceImage
+//      },
+//      TargetImage:{
+//          Bytes: targetImage
+//      }
+//    }
+//    return new Promise((resolve, reject) => {
+//     client.compareFaces(params, function(err, response) {
+//         if(err){
+//             return reject(err.message);
+//         }
+        
+//         response.FaceDetails.forEach(data => {
+//             similarity = data.Similarity;
+//           })
+//         return resolve(similarity);
+//    });
+//    });
+// }
 
 
 function calculateParameters(params, posts, idOfOriginalPost){
@@ -267,7 +296,10 @@ module.exports = {
     },
     encode: function(input){
         return encode(input);
-    }
+    },
+    // faceComparing: function(sourceImage, targetImage){
+    //     return faceComparing(sourceImage, targetImage);
+    // }
 };
 
 /*
