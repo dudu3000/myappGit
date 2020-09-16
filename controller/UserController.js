@@ -42,7 +42,7 @@ router.get('/', async(req, res, next)=>{
 router.get('/info', async(req, res, next)=>{
     try{
         const userInformation = await userFunctions.verifyTooken(req);
-        res.status(200).send(userInformation);
+        res.status(200).send(userInformation.user);
     }catch(err){
         next(err, req, res, next);
     }
@@ -62,9 +62,10 @@ router.post('/login', async(req, res, next)=>{
         req.body.userName,
         req.body.password,
     ];
-
+    
     const t = await sequelize.transaction();
     try{
+        await userFunctions.validateLoginData(userName, password);
         const foundUser = await User.User.findOne({
             where: {
                 userName: userName,

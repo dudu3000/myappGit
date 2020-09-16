@@ -1,5 +1,4 @@
-
-
+const errors = require('./../utils/ErrorsHandler.js');
 function pagination(req, res, model){
     const page = parseInt(req.query.page);
     const limit = parseInt(req.query.limit);
@@ -30,7 +29,7 @@ function pagination(req, res, model){
 
     if(results.results.length == 0){
 
-        throw Error('Posts not found!');
+        errors.failPost('Posts not found!');
 
     }
     return results;

@@ -9,6 +9,7 @@ const router = express.Router({
 const postdB = require('./../db/index.js');
 const Post = require('../db/models/Post.js');
 const File = require('../db/models/File.js');
+const User = require('../db/models/User.js');
 const sequelize = postdB.sequelize;
 const errors = require('./../utils/ErrorsHandler.js');
 
@@ -47,7 +48,7 @@ router.post('/upload', upload.single("file"), async(req, res, next)=>{
             id
         ]=[
             userInformation.user.userName,
-            userInformation.id
+            userInformation.user.id
         ];
         const faceDetection = await fileFunctions.faceRecognition(imageData);
         createdPost = await Post.Post.create({
@@ -175,12 +176,18 @@ router.post('/', async(req, res, next)=>{
     ];
     const t = await sequelize.transaction();
     try{
+        await fileFunctions.validatePostBodyParameter(userName);
         //Verify the if the token is valid
         const result = {
             posts: '',
             files: ''
         }
         const userInformation = await userFunctions.verifyTooken(req);
+        const foundUser = await User.User.findOne({
+            where: {
+                userName: userName
+            }
+        }, {transaction: t});
         const foundPosts = await Post.Post.findAll({
             where: {
                 userName: userName
@@ -191,6 +198,7 @@ router.post('/', async(req, res, next)=>{
                 userName: userName
             }
         }, {transaction: t});
+        await fileFunctions.validatePostPaginatedResults(foundPosts, foundFiles, foundUser);
         result.posts = await pag.pagination(req, res, foundPosts);
         result.files = await pag.pagination(req, res, foundFiles);
         await t.commit();
@@ -220,6 +228,7 @@ router.delete('/', async(req, res, next)=>{
     ];
     const t = await sequelize.transaction();
     try{
+        await fileFunctions.validateDeletingPost(idOfPost);
         const userInformation = await userFunctions.verifyTooken(req);
         [
             userName

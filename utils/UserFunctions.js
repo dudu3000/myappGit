@@ -12,6 +12,25 @@ function validateLogin(foundUser){
 
 //Used to check the length of inputs on creating new account
 function validateRegister(createdUser){
+    if(createdUser.firstName == undefined)
+        errors.failUser('Couldn\'t get the First Name field, please try again!');
+    if(createdUser.lastName == undefined)
+        errors.failUser('Couldn\'t get the Last Name field, please try again!');
+    if(createdUser.userName == undefined)
+        errors.failUser('Couldn\'t get the Username field, please try again!');
+    if(createdUser.password == undefined)
+        errors.failUser('Couldn\'t get the Password field, please try again!');
+    if(createdUser.email == undefined)
+        errors.failUser('Couldn\'t get the Email field, please try again!');
+    if(createdUser.birthDay == undefined)
+        errors.failUser('Couldn\'t get the Birthday field, please try again!');
+
+    if(!(/^[a-zA-Z]+$/.test(createdUser.firstName)))
+        errors.failUser('First name must contains only letters!')
+    if(!(/^[a-zA-Z]+$/.test(createdUser.lastName)))
+        errors.failUser('Last name must contains only letters!')
+    if(!(/^[a-zA-Z]/.test(createdUser.userName)))
+        errors.failUser('Username must have its first character a letter!');
 
     if(createdUser.firstName.length < 1 || createdUser.firstName.lenght > 40)
         errors.failUser('Firstname must contain at least 1 character and no more than 40 characters!');
@@ -28,6 +47,14 @@ function validateRegister(createdUser){
 }
 
 
+function validateLoginData(userName, password){
+    if(userName == undefined)
+        errors.failUser('Please fill Username field!');
+    if(password == undefined)
+        errors.failUser('Please fill Password field!');
+}
+
+
 
 //Used on login to create a token
 function createToken(foundUser){
@@ -40,7 +67,7 @@ function createToken(foundUser){
     }
     
     //Create the token
-    const accessToken = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: USER_TIME });
+    const accessToken = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '120m' });
     return accessToken;
 }
 
@@ -59,7 +86,7 @@ async function verifyTooken(requestHeaders){
     });
     delete user.iat;
     delete user.exp;
-    const accessToken = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: USER_TIME });
+    const accessToken = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '120m' });
     return {
         user: user,
         token: accessToken
@@ -79,5 +106,8 @@ module.exports = {
     },
     verifyTooken: function(requestHeaders){
         return verifyTooken(requestHeaders);
+    },
+    validateLoginData: function(userName, password){
+        return validateLoginData(userName, password);
     }
 };

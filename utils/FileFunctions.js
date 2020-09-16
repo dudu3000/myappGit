@@ -1,7 +1,5 @@
 const fileSystem = require('fs');
 const errors = require('./../utils/ErrorsHandler.js');
-//Copyright 2018 Amazon.com, Inc. or its affiliates. All Rights Reserved.
-//PDX-License-Identifier: MIT-0 (For details, see https://github.com/awsdocs/amazon-rekognition-developer-guide/blob/master/LICENSE-SAMPLECODE.)
 const AWS = require('aws-sdk');
 
 //Used to add a photo when a post reqest comes
@@ -33,7 +31,29 @@ function removeFile(userName, id){
 }
 
 
+function validateDeletingPost(id){
+    if(id == undefined)
+        errors.failUser('Id of the post is missing, please try again!');
+    if(typeof id !== 'number')
+        errors.failUser('The id of the post must be a number, please try again!');
+        
+}
 
+
+function validatePostPaginatedResults(posts, files, user){
+    if(user == null)
+        errors.failPost('User doesn\'t exists!');
+    if(posts == '')
+        errors.failPost('User doesn\'t have any posts!');
+    if(files == '')
+        errors.failPost('This user doesn\'t have any posts yet!');
+}
+
+
+function validatePostBodyParameter(user){
+    if(user == undefined)
+        errors.failPost('The request must have "userName" parameter inside body!');
+}
 function faceRecognition(image){
    var imageParams;
    const photo  = image
@@ -297,6 +317,15 @@ module.exports = {
     encode: function(input){
         return encode(input);
     },
+    validateDeletingPost: function(id){
+        return validateDeletingPost(id);
+    },
+    validatePostPaginatedResults: function(posts, files, user){
+        return validatePostPaginatedResults(posts, files, user);
+    },
+    validatePostBodyParameter: function(user){
+        return validatePostBodyParameter(user);
+    }
     // faceComparing: function(sourceImage, targetImage){
     //     return faceComparing(sourceImage, targetImage);
     // }
