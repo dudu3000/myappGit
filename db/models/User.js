@@ -30,6 +30,14 @@ User.init({
     birthDay: {
         type: Sequelize.DATEONLY,
         allowNull: false
+    },
+    profilePicture: {
+        type: Sequelize.INTEGER,
+        allowNull: true
+    },
+    profileDescription: {
+        type: Sequelize.STRING,
+        allowNull: true
     }
 },{
     sequelize,

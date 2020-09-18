@@ -180,7 +180,8 @@ router.post('/', async(req, res, next)=>{
         //Verify the if the token is valid
         const result = {
             posts: '',
-            files: ''
+            files: '',
+            user: ''
         }
         const userInformation = await userFunctions.verifyTooken(req);
         const foundUser = await User.User.findOne({
@@ -204,7 +205,8 @@ router.post('/', async(req, res, next)=>{
         await t.commit();
         res.send({
             result: result,
-            token: userInformation.token
+            token: userInformation.token,
+            user: foundUser
         });
     }catch(err){
         await t.rollback();

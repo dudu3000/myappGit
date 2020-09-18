@@ -61,8 +61,12 @@ function createToken(foundUser){
 
     const user = {
         userName: foundUser.userName,
+        firstName: foundUser.firstName,
+        lastName: foundUser.lastName,
         email: foundUser.email,
         birthDay: foundUser.birthDay,
+        profilePicture: foundUser.profilePicture,
+        profileDescription: foundUser.profileDescription,
         id: foundUser.id
     }
     
