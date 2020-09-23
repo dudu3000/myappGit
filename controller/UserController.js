@@ -1,7 +1,9 @@
 const pag = require('./../utils/pagination.js');
+const fileFunctions = require('./../utils/FileFunctions.js');
 const userFunctions = require('./../utils/UserFunctions.js');
 const errors = require('./../utils/ErrorsHandler.js');
 const express = require('express');
+const multer = require('multer');
 const router = express.Router({
     mergeParams: true
 });
@@ -10,8 +12,84 @@ const User = require('../db/models/User.js');
 const ErrorsHandler = require('./../utils/ErrorsHandler.js');
 const sequelize = userdB.sequelize;
 
+const upload = multer({
+    dest: './../db/photos/'
+})
 
 
+router.post('/editProfile', upload.single("file"), async(req, res, next)=>{
+    var imageData = ''
+    if(req.files !== null)
+        imageData = req.files.file.data;
+    
+
+    [
+        email,
+        birthDay,
+        profileDescription
+    ]=[
+        req.query.email,
+        req.query.birthDay,
+        req.query.profileDescription
+    ];
+    var userInformation = '';
+    createdPost = '';
+    const t = await sequelize.transaction();
+
+    try{
+        userInformation = await userFunctions.verifyTooken(req);
+        [
+            userName
+        ]=[
+            userInformation.user.userName
+        ];
+        const updateProfile = await User.User.update({
+            email: email,
+            birthDay: birthDay,
+            profileDescription: profileDescription
+        },{
+            where: {
+                userName: userName
+            }
+        }, {transaction: t});
+        if(imageData !== ''){
+            await fileFunctions.addProfilePic(imageData, userName);
+        }
+        const newData = await User.User.findOne({
+            where:{
+                userName: userName
+            }
+        })
+        const token = await userFunctions.createToken(newData)
+        await t.commit();
+        res.status(200).send({text: 'Profile edited!', token: token});
+    }catch(err){
+        await t.rollback();
+        next(err, req, res, next);
+    }
+    
+});
+
+
+router.post('/profile', async(req, res, next)=>{
+    const t = await sequelize.transaction();
+    try{
+        const userInformation = await userFunctions.verifyTooken(req);
+        [
+            userName
+        ]=[
+            req.body.userName
+        ];
+        const fileData = await fileFunctions.encode(new Uint8Array(await fileFunctions.getProfilePic(userName)));
+        await t.commit();
+        res.status(200).send({
+            data: fileData
+        });
+    }catch(err){
+        await t.rollback();
+        next(err, req, res, next);
+    }
+});
 
 
 

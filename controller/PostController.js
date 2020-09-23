@@ -89,6 +89,12 @@ router.post('/upload', upload.single("file"), async(req, res, next)=>{
     
 });
 
+
+
+
+
+
+
 router.get('/face/:id', async(req, res, next)=>{
     [
         idOfPost
@@ -208,6 +214,7 @@ router.post('/', async(req, res, next)=>{
             token: userInformation.token,
             user: foundUser
         });
+        console.log(userInformation.token)
     }catch(err){
         await t.rollback();
         next(err, req, res, next);

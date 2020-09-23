@@ -4,6 +4,15 @@ const jwt = require('jsonwebtoken');
 const errors = require('./../utils/ErrorsHandler.js');
 const USER_TIME = '5m';
 
+
+function updateProfile(profile, email, birthDay, profileDescription){
+    profile.email = email;
+    profile.birthDay = birthDay;
+    profile.profileDescription = profileDescription;
+    return profile;
+}
+
+
 //Used for Login
 function validateLogin(foundUser){
     if(foundUser == null)
@@ -71,7 +80,7 @@ function createToken(foundUser){
     }
     
     //Create the token
-    const accessToken = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '120m' });
+    const accessToken = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: USER_TIME });
     return accessToken;
 }
 
@@ -90,7 +99,7 @@ async function verifyTooken(requestHeaders){
     });
     delete user.iat;
     delete user.exp;
-    const accessToken = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '120m' });
+    const accessToken = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: USER_TIME });
     return {
         user: user,
         token: accessToken
@@ -113,5 +122,8 @@ module.exports = {
     },
     validateLoginData: function(userName, password){
         return validateLoginData(userName, password);
+    },
+    updateProfile: function(profile, email, birthDay, profileDescription){
+        return updateProfile(profile, email, birthDay, profileDescription);
     }
 };

@@ -2,6 +2,24 @@ const fileSystem = require('fs');
 const errors = require('./../utils/ErrorsHandler.js');
 const AWS = require('aws-sdk');
 
+
+function addProfilePic(data, user){
+    var path = './db/photos/profile-' + user + '.jpg';
+    try{
+        fileSystem.writeFileSync(path, data);
+    }catch(err){
+        errors.failPost('Error uploading profile picture! Please try again!');
+    }
+}
+
+function getProfilePic(user){
+    var path = './db/photos/profile-' + user + '.jpg';
+    var fileData = fileSystem.readFileSync(path);
+    return fileData;
+}
+
+
+
 //Used to add a photo when a post reqest comes
 function addFile(data, userName){
 
@@ -325,6 +343,12 @@ module.exports = {
     },
     validatePostBodyParameter: function(user){
         return validatePostBodyParameter(user);
+    },
+    addProfilePic: function(data, user){
+        return addProfilePic(data, user);
+    },
+    getProfilePic: function(user){
+        return getProfilePic(user);
     }
     // faceComparing: function(sourceImage, targetImage){
     //     return faceComparing(sourceImage, targetImage);
