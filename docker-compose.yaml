@@ -1,0 +1,18 @@
+version: '3.6'
+
+services:
+  api:
+    build:
+      context: .
+      target: base
+      dockerfile: Dockerfile
+    command: sh -c "npm install && node server.js"
+    ports:
+      - 127.0.0.1:3000:3000
+    volumes:
+      - .:/app
+      - /app/node_modules
+    profiles:
+      - dev
+    env_file:
+      - ./.env
